@@ -218,3 +218,85 @@ $ spring run app.groovy
 ```text
 Hello World!
 ```
+
+## 4.4 첫 번째 Spring Boot 애플리케이션 개발
+이 섹션에서는 작은 "Hello World!"를 개발하는 방법에 대해 설명합니다. Spring Boot의 주요 기능 중 일부를 강조하는 웹 애플리케이션입니다.
+대부분의 IDE가 Maven을 지원하므로 Maven을 사용하여 이 프로젝트를 빌드합니다.
+
+> TIP
+> 
+> spring.io 웹 사이트에는 Spring Boot를 사용하는 많은 "시작하기" 가이드가 포함되어 있습니다. 특정 문제를 해결해야 하는 경우 먼저 확인하십시오.
+> 
+> start.spring.io로 이동하고 디펜더시 검색기에서 web starter를 선택하여 아래 단계를 바로 실행할 수 있습니다.
+> 그렇게 하면 바로 코딩을 시작할 수 있도록 새로운 프로젝트 구조가 생성됩니다. 자세한 내용은 start.spring.io 사용자 가이드를 확인하세요.
+
+시작하기 전에 터미널을 열고 다음 명령을 실행하여 유효한 버전의 Java 및 Maven이 설치되어 있는지 확인하십시오
+
+```shell
+$ java -version
+java version "1.8.0_102"
+Java(TM) SE Runtime Environment (build 1.8.0_102-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.102-b14, mixed mode)
+```
+```shell
+$ mvn -v
+Apache Maven 3.5.4 (1edded0938998edf8bf061f1ceb3cfdeccf443fe; 2018-06-17T14:33:14-04:00)
+Maven home: /usr/local/Cellar/maven/3.3.9/libexec
+Java version: 1.8.0_102, vendor: Oracle Corporation
+```
+
+> Note
+> 
+> 이 샘플은 자신의 디렉터리에 만들어야 합니다. 후속 지침에서는 적절한 디렉토리를 생성했으며 현재 디렉토리라고 가정합니다.
+
+### 4.4.1 POM 생성
+Maven pom.xml 파일을 생성하여 시작해야 합니다. pom.xml은 프로젝트를 빌드하는 데 사용되는 재료입니다. 즐겨 사용하는 텍스트 편집기를 열고 다음을 추가합니다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>myproject</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.11-SNAPSHOT</version>
+    </parent>
+
+    <!-- Additional lines to be added here... -->
+
+    <!-- (you do not need this if you are using a .RELEASE version) -->
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <url>https://repo.spring.io/milestone</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <url>https://repo.spring.io/snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <url>https://repo.spring.io/milestone</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
+```
+
+앞의 목록은 작동하는 빌드를 제공해야 합니다. mvn 패키지를 실행하여 테스트할 수 있습니다(지금은 "jar가 비어 있을 것입니다. 포함할 콘텐츠가 표시되지 않았습니다!" 경고를 무시할 수 있습니다).
+
+> Note
+> 
+> 이 시점에서 프로젝트를 IDE로 가져올 수 있습니다(대부분의 최신 Java IDE에는 Maven에 대한 기본 제공 지원이 포함됨). 단순화를 위해 이 예제에서는 일반 텍스트 편집기를 계속 사용합니다
