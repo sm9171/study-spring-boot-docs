@@ -300,3 +300,198 @@ Maven pom.xml 파일을 생성하여 시작해야 합니다. pom.xml은 프로�
 > Note
 > 
 > 이 시점에서 프로젝트를 IDE로 가져올 수 있습니다(대부분의 최신 Java IDE에는 Maven에 대한 기본 제공 지원이 포함됨). 단순화를 위해 이 예제에서는 일반 텍스트 편집기를 계속 사용합니다
+
+### 4.2.2 Classpath Dependencies 추가
+Spring Boot는 클래스 경로에 jar를 추가할 수 있는 여러 "스타터"를 제공합니다. 스모크 테스트용 애플리케이션은 POM의 상위 섹션에서 `spring-boot-starter-parent`를 사용합니다.
+spring-boot-starter-parent는 유용한 Maven 기본값을 제공하는 특수 스타터입니다. 또한 "blessed" 의존성에 대한 버전 태그를 생략할 수 있도록 의존성 관리 섹션을 제공합니다.
+
+다른 "스타터"는 특정 유형의 애플리케이션을 개발할 때 필요할 가능성이 있는 dependencies을 제공합니다.
+웹 애플리케이션을 개발 중이므로 `spring-boot-starter-web` 의존성을 추가합니다. 그 전에 다음 명령을 실행하여 현재 가지고 있는 것을 볼 수 있습니다.
+
+```shell
+$ mvn dependency:tree
+
+[INFO] com.example:myproject:jar:0.0.1-SNAPSHOT
+```
+
+`mvn dependency:tree` 명령은 프로젝트 종속성의 트리 표현을 인쇄합니다.
+`spring-boot-starter-parent` 자체적으로 종속성을 제공하지 않는 것을 볼 수 있습니다.
+필요한 종속성을 추가하려면 `pom.xml`을 편집하고 상위 섹션 바로 아래에 `spring-boot-starter-web` 종속성을 추가하십시오.
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+</dependencies>
+```
+
+`mvn dependency:tree`를 다시 실행하면 이제 Tomcat 웹 서버 및 Spring Boot 자체를 포함하여 많은 추가 종속성이 있음을 알 수 있습니다.
+
+### 4.4.3. 코드 작성
+애플리케이션을 완료하려면 단일 Java 파일을 생성해야 합니다. 기본적으로 Maven은 `src/main/java`에서 소스를 컴파일하므로 해당 디렉터리 구조를 만든 다음 `src/main/java/MyApplication`이라는 파일을 추가해야 합니다.
+JAVA로 구성한 코드는 다음과 같습니다.
+
+```java
+@RestController
+@EnableAutoConfiguration
+public class MyApplication {
+
+    @RequestMapping("/")
+    String home() {
+        return "Hello World!";
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+
+}
+```
+
+여기에는 많은 코드가 없지만 상당히 많은 작업이 진행됩니다. 다음 몇 섹션에서 중요한 부분을 단계별로 살펴봅니다.
+
+### @RestController 와 @RequestMapping 어노테이션
+MyApplication 클래스의 첫 번째 어노테이션은 @RestController입니다. 이를 스테레오타입 어노테이션이라고 합니다
+코드를 읽는 사람들과 클래스가 특정 역할을 수행하는 Spring에 대한 힌트를 제공합니다. 이 경우 우리 클래스는 웹 @Controller이므로 Spring은 들어오는 웹 요청을 처리할 때 이를 고려합니다.
+
+@RequestMapping 어노테이션은 "라우팅" 정보를 제공합니다.
+이것은 / 경로가 있는 모든 HTTP 요청이 홈 메소드에 매핑되어야 함을 Spring에 알립니다. @RestController 어노테이션은 결과 문자열을 호출자에게 직접 다시 렌더링하도록 Spring에 지시합니다.
+
+> TIP
+> 
+> @RestController 및 @RequestMapping 어노테이선은 Spring MVC 어노테이션입니다(Spring Boot에만 해당되지 않음). 자세한 내용은 Spring 참조 문서의 MVC 섹션을 참조하세요.
+
+### @EnableAutoConfiguration 어노테이션
+두 번째 클래스 레벨 어노테이션은 @EnableAutoConfiguration입니다.
+이 어노테이션은 추가한 jar 종속성을 기반으로 Spring 구성 방법을 "추측"하도록 Spring Boot에 지시합니다.
+`spring-boot-starter-web`이 Tomcat 및 Spring MVC를 추가했기 때문에 자동 구성은 웹 애플리케이션을 개발하고 그에 따라 Spring을 설정한다고 가정합니다.
+
+> 스타터 및 자동 구성
+> 
+> 자동 구성은 "스타터"와 잘 작동하도록 설계되었지만 두 개념이 직접 연결되지는 않습니다.
+> 스타터 외부에서 jar 종속성을 자유롭게 선택하고 선택할 수 있습니다. Spring Boot는 여전히 애플리케이션을 자동 구성하기 위해 최선을 다하고 있습니다.
+
+### 메인 메소드
+애플리케이션의 마지막 부분은 기본 메서드입니다. 애플리케이션 진입점에 대한 Java 규칙을 따르는 표준 방법입니다.
+메인 메서드는 `run`을 호출하여 Spring Boot의 `SpringApplication 클래스`에 위임합니다.
+SpringApplication은 애플리케이션을 부트스트랩하여 Spring을 시작하고, Spring은 자동 구성된 Tomcat 웹 서버를 시작합니다.
+우리는 `MyApplication.class`를 run 메서드에 대한 인수로 전달하여 SpringApplication에 기본 Spring 구성 요소를 알려야 합니다.
+args 배열도 전달되어 모든 명령줄 인수를 노출합니다.
+
+### 예제 실행
+이 시점에서 애플리케이션이 작동해야 합니다. `spring-boot-starter-parent` POM을 사용했으므로 애플리케이션을 시작하는 데 사용할 수 있는 유용한 실행 목표가 있습니다.
+루트 프로젝트 디렉토리에서 mvn spring-boot:run을 입력하여 애플리케이션을 시작합니다. 다음과 유사한 출력이 표시되어야 합니다.
+
+```shell
+$ mvn spring-boot:run
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v2.6.11-SNAPSHOT)
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 2.222 seconds (JVM running for 6.514)
+
+```
+
+localhost:8080에 대한 웹 브라우저를 열면 다음 출력이 표시되어야 합니다.
+
+```text
+Hello World!
+```
+
+애플리케이션을 정상적으로 종료하려면 ctrl-c를 누르십시오.
+
+### 실행 가능한 jar 만들기
+프로덕션 환경에서 실행할 수 있는 완전히 독립적인 실행 가능한 jar 파일을 생성하여 예제를 마무리합니다.
+실행 가능한 jar("fat jar"라고도 함)는 코드를 실행하는 데 필요한 모든 jar 종속성과 함께 컴파일된 클래스를 포함하는 아카이브입니다.
+
+> 실행 가능한 jar 및 Java
+> 
+> Java는 중첩된 jar 파일(jar 내에 포함된 jar 파일)을 로드하는 표준 방법을 제공하지 않습니다. 독립형 애플리케이션을 배포하려는 경우 문제가 될 수 있습니다.
+> 
+> 이 문제를 해결하기 위해 많은 개발자들이 "uber" jars를 사용합니다. uber jar는 모든 애플리케이션 종속성의 모든 클래스를 단일 아카이브로 패키징합니다.
+> 이 접근 방식의 문제점은 애플리케이션에 어떤 라이브러리가 있는지 확인하기 어렵다는 것입니다. 또한 여러 jar에서 동일한 파일 이름이 사용되지만 내용이 다른 경우에도 문제가 될 수 있습니다.
+> 
+> Spring Boot는 다른 접근 방식을 취하며 실제로 jar를 직접 중첩할 수 있습니다.
+
+실행 가능한 jar를 생성하려면 pom.xml에 `spring-boot-maven-plugin`을 추가해야 합니다. 이렇게 하려면 종속성 섹션 바로 아래에 다음 줄을 삽입합니다.
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+```
+
+> 노트
+> 
+> `spring-boot-starter-parent` POM에는 리패키지 목표를 바인딩하는 `<executions>` 구성이 포함되어 있습니다. 상위 POM을 사용하지 않는 경우 이 구성을 직접 선언해야 합니다. 자세한 내용은 플러그인 설명서를 참조하십시오.
+
+다음과 같이 pom.xml을 저장하고 명령줄에서 mvn 패키지를 실행합니다.
+
+```shell
+$ mvn package
+
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building myproject 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] .... ..
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ myproject ---
+[INFO] Building jar: /Users/developer/example/spring-boot-example/target/myproject-0.0.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.6.11-SNAPSHOT:repackage (default) @ myproject ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+
+```
+
+대상 디렉토리를 보면 `myproject-0.0.1-SNAPSHOT.jar`이 표시되어야 합니다. 파일 크기는 약 10MB여야 합니다. 내부를 들여다 보려면 다음과 같이 `jar tvf`를 사용할 수 있습니다.
+
+```shell
+$ jar tvf target/myproject-0.0.1-SNAPSHOT.jar
+```
+
+또한 대상 디렉토리에 `myproject-0.0.1-SNAPSHOT.jar.original`이라는 훨씬 작은 파일이 표시되어야 합니다. 이것은 Spring Boot에 의해 리패키징되기 전에 Maven이 생성한 원래 jar 파일입니다.
+
+해당 애플리케이션을 실행하려면 다음과 같이 java -jar 명령을 사용하십시오.
+
+```shell
+$ java -jar target/myproject-0.0.1-SNAPSHOT.jar
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::  (v2.6.11-SNAPSHOT)
+....... . . .
+....... . . . (log output here)
+....... . . .
+........ Started MyApplication in 2.536 seconds (JVM running for 2.864)
+
+```
+
+이전과 마찬가지로 응용 프로그램을 종료하려면 ctrl-c를 누릅니다.
+
+## 4.5. 다음에 읽을 내용
+바라건대, 이 섹션에서는 몇 가지 Spring Boot 기본 사항을 제공하고 자신의 애플리케이션을 작성하는 방법에 대해 설명했습니다.
+작업 지향적인 유형의 개발자라면 spring.io로 이동하여 특정 "Spring으로 어떻게 해야 합니까?"라는 문제를 해결하는 시작 가이드를 따를 수 있습니다.
+또한 Spring Boot 관련 "How-to" 참조 문서도 있습니다.
+
+그렇지 않으면 다음 논리적 단계는 Spring Boot로 개발을 읽는 것입니다. 정말 참을성이 없다면 Spring Boot 기능에 대해 읽어볼 수도 있습니다.
