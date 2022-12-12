@@ -360,3 +360,42 @@ public class MyAccountService implements AccountService {
 > Tip
 > 
 > 생성자 주입을 사용하면 riskAssessor 필드가 최종으로 표시되어 나중에 변경할 수 없음을 나타내는 방법에 유의하십시오.
+
+## 6.6 @SpringBootApplication 어노테이션 사용
+많은 Spring Boot 개발자는 앱이 자동 구성, 구성 요소 스캔을 사용하고 "애플리케이션 클래스"에서 추가 구성을 정의할 수 있는 것을 좋아합니다.
+단일 @SpringBootApplication 어노테이션을 사용하여 다음과 같은 세 가지 기능을 활성화할 수 있습니다.
+- @EnableAutoConfiguration: Spring Boot의 자동 구성 메커니즘을 활성화합니다.
+- @ComponentScan: 애플리케이션이 있는 패키지에서 @Component 스캔을 활성화합니다(모범 사례 참조).
+- @SpringBootConfiguration: 컨텍스트에서 추가 빈 등록 또는 추가 구성 클래스 가져오기를 활성화합니다. 통합 테스트에서 구성 감지를 지원하는 Spring의 표준 @Configuration에 대한 대안입니다.
+
+```java
+// Same as @SpringBootConfiguration @EnableAutoConfiguration @ComponentScan
+@SpringBootApplication
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+
+}
+```
+
+> Note
+> 
+> @SpringBootApplication은 또한 @EnableAutoConfiguration 및 @ComponentScan의 속성을 사용자 지정하기 위한 별칭을 제공합니다.
+ 
+> Note
+> 
+> 이러한 기능 중 어느 것도 필수 기능이 아니며 활성화하는 기능으로 이 단일 어노테이션을 바꾸도록 선택할 수 있습니다. 예를 들어 애플리케이션에서 구성 요소 스캔 또는 구성 속성 스캔을 사용하고 싶지 않을 수 있습니다.
+> ```java
+> @SpringBootConfiguration(proxyBeanMethods = false)
+> @EnableAutoConfiguration
+> @Import({ SomeConfiguration.class, AnotherConfiguration.class })
+> public class MyApplication {
+>
+>    public static void main(String[] args) {
+>        SpringApplication.run(MyApplication.class, args);
+>    }
+> }
+> ```
+> 이 예제에서 MyApplication은 @Component 어노테이션이 달린 클래스와 @ConfigurationProperties 어노테이션이 달린 클래스가 자동으로 감지되지 않고 사용자 정의 빈을 명시적으로 가져온다는 점을 제외하면 다른 Spring Boot 애플리케이션과 같습니다(@Import 참조).
