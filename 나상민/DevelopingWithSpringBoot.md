@@ -258,3 +258,105 @@ public class MyApplication {
 
 }
 ```
+
+## 6.3. Configuration 클래스
+Spring Boot는 Java 기반 구성을 선호합니다. XML 소스와 함께 SpringApplication을 사용하는 것이 가능하지만 일반적으로 기본 소스가 단일 @Configuration 클래스인 것을 권장합니다.
+
+> 팁
+> 
+> XML 구성을 사용하는 많은 Spring 구성 예제가 인터넷에 게시되었습니다. 가능하면 항상 동등한 Java 기반 구성을 사용하십시오. Enable* 어노테이션을 검색하는 것이 좋은 출발점이 될 수 있습니다
+
+### 6.3.1 추가 Configuration 클래스 가져오기
+모든 @Configuration을 단일 클래스에 넣을 필요는 없습니다. @Import 어노테이션을 사용하여 추가 구성 클래스를 가져올 수 있습니다.
+또는 @ComponentScan을 사용하여 @Configuration 클래스를 포함한 모든 Spring 구성 요소를 자동으로 선택할 수 있습니다.
+
+### 6.3.2 XML Configuration 가져오기
+XML 기반 구성을 반드시 사용해야 하는 경우 여전히 @Configuration 클래스로 시작하는 것이 좋습니다. 그런 다음 @ImportResource 어노테이션을 사용하여 XML 구성 파일을 로드할 수 있습니다.
+
+## 6.4. Auto-configuration
+Spring Boot Auto-configuration은 추가한 jar 디펜던시를 기반으로 Spring 애플리케이션을 자동으로 구성하려고 시도합니다.
+예를 들어 `HSQLDB`가 클래스 경로에 있고 데이터베이스 연결 Bean을 수동으로 구성하지 않은 경우 Spring Boot는 메모리 내 데이터베이스를 자동 구성합니다.
+
+@Configuration 클래스 중 하나에 @EnableAutoConfiguration 또는 @SpringBootApplication 어노테이션을 추가하여 자동 구성을 선택해야 합니다.
+
+> 팁
+> 
+> @SpringBootApplication 또는 @EnableAutoConfiguration 어노테이션을 하나만 추가해야 합니다. 일반적으로 기본 @Configuration 클래스에만 둘 중 하나를 추가하는 것이 좋습니다.
+
+### 6.4.1 점진적으로 Auto-configuration 교체
+Auto-configuration은 비침투적입니다. 언제든지 자체 구성 정의를 시작하여 자동 구성의 특정 부분을 교체할 수 있습니다. 예를 들어, 자신의 DataSource bean을 추가하면 기본 임베디드 데이터베이스 지원이 뒤로 물러납니다.
+
+현재 적용 중인 자동 구성 하는 것과 그 이유를 알아야 하는 경우 --debug 스위치를 사용하여 애플리케이션을 시작하십시오. 이렇게 하면 코어 로거 선택에 대한 디버그 로그가 활성화되고 조건 보고서가 콘솔에 기록됩니다.
+
+### 6.4.2 특정 Auto-configuration 클래스 비활성화
+원하지 않는 특정 자동 구성 클래스가 적용되고 있는 경우 다음 예제와 같이 @SpringBootApplication의 exclude 특성을 사용하여 비활성화할 수 있습니다
+
+```java
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
+public class MyApplication {
+
+}
+```
+클래스가 클래스 경로에 없으면 어노테이션의 excludeName 속성을 사용하고 대신 정규화된 이름을 지정할 수 있습니다.
+@SpringBootApplication 대신 @EnableAutoConfiguration을 사용하려는 경우 exclude 및 excludeName도 사용할 수 있습니다.
+마지막으로 `spring.autoconfigure.exclude` 속성을 사용하여 제외할 Auto-configuration 클래스 목록을 제어할 수도 있습니다.
+
+> TIP
+> 
+> 어노테이션 수준과 속성을 사용하여 제외를 정의할 수 있습니다
+
+> Note
+> 
+> `auto-configuration` 클래스가 public 이더라도 public API로 간주되는 클래스의 유일한 측면은 `auto-configuration`을 비활성화하는 데 사용할 수 있는 클래스의 이름입니다.
+> 중첩된 구성 클래스 또는 Bean 메소드와 같은 해당 클래스의 실제 컨텐츠는 내부 전용이며 직접 사용하지 않는 것이 좋습니다.
+
+## 6.5 스프링 빈과 의존성 주입
+표준 Spring Framework 기술을 자유롭게 사용하여 빈과 삽입된 종속성을 정의할 수 있습니다. 일반적으로 생성자 주입을 사용하여 종속성을 연결하고 @ComponentScan을 사용하여 빈을 찾는 것이 좋습니다.
+위에서 제안한 대로 코드를 구성하는 경우(최상위 패키지에서 애플리케이션 클래스 찾기) arguments 없이 @ComponentScan을 추가하거나 이를 암시적으로 포함하는 @SpringBootApplication 주석을 사용할 수 있습니다. 모든 애플리케이션 구성 요소(@Component, @Service, @Repository, @Controller 등)는 자동으로 Spring Beans로 등록됩니다.
+
+다음 예제는 필요한 RiskAssessor bean을 얻기 위해 생성자 주입을 사용하는 @Service Bean을 보여줍니다.
+
+```java
+@Service
+public class MyAccountService implements AccountService {
+
+    private final RiskAssessor riskAssessor;
+
+    public MyAccountService(RiskAssessor riskAssessor) {
+        this.riskAssessor = riskAssessor;
+    }
+
+    // ...
+
+}
+```
+
+bean이 하나 이상의 생성자를 가지고 있다면 Spring이 @Autowired와 함께 사용하기를 원하는 생성자를 표시해야 합니다.
+
+```java
+@Service
+public class MyAccountService implements AccountService {
+
+    private final RiskAssessor riskAssessor;
+
+    private final PrintStream out;
+
+    @Autowired
+    public MyAccountService(RiskAssessor riskAssessor) {
+        this.riskAssessor = riskAssessor;
+        this.out = System.out;
+    }
+
+    public MyAccountService(RiskAssessor riskAssessor, PrintStream out) {
+        this.riskAssessor = riskAssessor;
+        this.out = out;
+    }
+
+    // ...
+
+}
+```
+
+> Tip
+> 
+> 생성자 주입을 사용하면 riskAssessor 필드가 최종으로 표시되어 나중에 변경할 수 없음을 나타내는 방법에 유의하십시오.
