@@ -399,3 +399,58 @@ public class MyApplication {
 > }
 > ```
 > 이 예제에서 MyApplication은 @Component 어노테이션이 달린 클래스와 @ConfigurationProperties 어노테이션이 달린 클래스가 자동으로 감지되지 않고 사용자 정의 빈을 명시적으로 가져온다는 점을 제외하면 다른 Spring Boot 애플리케이션과 같습니다(@Import 참조).
+
+## 6.7 어플리케이션 실행
+애플리케이션을 jar로 패키징하고 임베디드 HTTP 서버를 사용하는 것의 가장 큰 장점 중 하나는 애플리케이션을 다른 것과 마찬가지로 실행할 수 있다는 것입니다.
+이 샘플은 Spring Boot 애플리케이션 디버깅에 적용됩니다. 특별한 IDE 플러그인이나 확장이 필요하지 않습니다.
+
+> Note
+> 
+> 이 섹션에서는 jar 기반 패키징만 다룹니다. 응용 프로그램을 war 파일로 패키징하기로 선택한 경우 서버 및 IDE 설명서를 참조하십시오.
+
+### 6.7.1 IDE에서 실행
+IDE에서 Spring Boot 애플리케이션을 Java 애플리케이션으로 실행할 수 있습니다. 그러나 먼저 프로젝트를 가져와야 합니다.
+그러나 먼저 프로젝트를 가져와야 합니다. 가져오기 단계는 IDE 및 빌드 시스템에 따라 다릅니다. 대부분의 IDE는 Maven 프로젝트를 직접 가져올 수 있습니다.
+예를 들어 Eclipse 사용자는 파일 메뉴에서 가져오기… → 기존 Maven 프로젝트를 선택할 수 있습니다.
+
+프로젝트를 IDE로 직접 가져올 수 없는 경우 빌드 플러그인을 사용하여 IDE 메타데이터를 생성할 수 있습니다. Maven에는 Eclipse 및 IDEA용 플러그인이 포함되어 있습니다. Gradle은 다양한 IDE용 플러그인을 제공합니다.
+
+> Tip
+> 
+> 실수로 웹 애플리케이션을 두 번 실행하면 "이미 사용 중인 포트" 오류가 표시됩니다. Spring Tools 사용자는 Run 버튼이 아닌 Relaunch 버튼을 사용하여 기존 인스턴스가 닫혔는지 확인할 수 있습니다.
+
+### 6.7.2 패키지 애플리케이션으로 실행
+Spring Boot Maven 또는 Gradle 플러그인을 사용하여 실행 가능한 jar를 생성하는 경우 다음 예제와 같이 java -jar를 사용하여 애플리케이션을 실행할 수 있습니다.
+```shell
+java -jar target/myapplication-0.0.1-SNAPSHOT.jar
+```
+원격 디버깅 지원이 활성화된 패키지 애플리케이션을 실행할 수도 있습니다. 이렇게 하면 다음 예제와 같이 디버거를 패키징된 애플리케이션에 연결할 수 있습니다.
+```shell
+java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n \
+       -jar target/myapplication-0.0.1-SNAPSHOT.jar
+```
+
+### 6.7.3 메이븐 플러그인 사용
+Spring Boot Maven 플러그인에는 애플리케이션을 빠르게 컴파일하고 실행하는 데 사용할 수 있는 실행 목표가 포함되어 있습니다.
+응용 프로그램은 IDE에서처럼 분해된 형태로 실행됩니다. 다음 예제는 Spring Boot 애플리케이션을 실행하는 일반적인 Maven 명령을 보여줍니다.
+```shell
+mvn spring-boot:run
+```
+다음 예제와 같이 `MAVEN_OPTS` 운영 체제 환경 변수를 사용할 수도 있습니다.
+```shell
+export MAVEN_OPTS=-Xmx1024m
+```
+### 6.7.3 Gradle 플러그인 사용
+Spring Boot Gradle 플러그인에는 분해된 형식으로 애플리케이션을 실행하는 데 사용할 수 있는 bootRun 작업도 포함되어 있습니다.
+bootRun 작업은 org.springframework.boot 및 java 플러그인을 적용할 때마다 추가되며 다음 예제에 표시됩니다.
+```shell
+gradle bootRun
+```
+다음 예제와 같이 `JAVA_OPTS` 운영 체제 환경 변수를 사용할 수도 있습니다.
+```shell
+export JAVA_OPTS=-Xmx1024m
+```
+### 6.7.5 Hot Swapping
+Spring Boot 애플리케이션은 일반 Java 애플리케이션이므로 JVM 핫스왑은 기본적으로 작동해야 합니다. JVM 핫 스와핑은 대체할 수 있는 바이트코드로 다소 제한됩니다. 보다 완벽한 솔루션을 위해 JRebel을 사용할 수 있습니다.
+
+`spring-boot-devtools` 모듈에는 빠른 애플리케이션 재시작에 대한 지원도 포함되어 있습니다. 자세한 내용은 핫 스와핑 "방법"을 참조하십시오.
