@@ -726,3 +726,169 @@ restart:
 데이터를 역직렬화해야 하는 경우 Spring의 ConfigurableObjectInputStream을 Thread.currentThread().getContextClassLoader()와 함께 사용해야 할 수 있습니다.
 
 불행히도 여러 타사 라이브러리는 컨텍스트 클래스 로더를 고려하지 않고 역직렬화합니다. 이러한 문제를 발견하면 원 저작자에게 수정을 요청해야 합니다.
+
+### 6.8.4 LiveReload
+spring-boot-devtools 모듈에는 리소스가 변경될 때 브라우저 새로 고침을 트리거하는 데 사용할 수 있는 임베디드 LiveReload 서버가 포함되어 있습니다.
+LiveReload 브라우저 확장은 livereload.com에서 Chrome, Firefox 및 Safari에서 무료로 사용할 수 있습니다.
+
+애플리케이션이 실행될 때 LiveReload 서버를 시작하지 않으려면 spring.devtools.livereload.enabled 속성을 `false`로 설정할 수 있습니다.
+
+> Note
+> 
+> 한 번에 하나의 LiveReload 서버만 실행할 수 있습니다. 애플리케이션을 시작하기 전에 다른 LiveReload 서버가 실행되고 있지 않은지 확인하십시오. 
+> IDE에서 여러 애플리케이션을 시작하는 경우 첫 번째 애플리케이션만 LiveReload를 지원합니다.
+
+> Warning
+> 
+> 파일이 변경될 때 LiveReload를 트리거하려면 자동 다시 시작을 활성화해야 합니다.
+ 
+### 6.8.5. 전역 설정
+다음 파일 중 하나를 $HOME/.config/spring-boot 디렉토리에 추가하여 전역 devtools 설정을 구성할 수 있습니다.
+
+1. spring-boot-devtools.properties
+2. spring-boot-devtools.yaml
+3. spring-boot-devtools.yml
+
+이 파일에 추가된 모든 속성은 devtools를 사용하는 머신의 모든 Spring Boot 애플리케이션에 적용됩니다. 예를 들어 항상 트리거 파일을 사용하도록 다시 시작을 구성하려면 spring-boot-devtools 파일에 다음 속성을 추가합니다.
+
+```properties
+spring.devtools.restart.trigger-file=.reloadtrigger
+```
+
+```yaml
+spring:
+  devtools:
+    restart:
+      trigger-file: ".reloadtrigger"
+```
+
+기본적으로 $HOME은 사용자의 홈 디렉토리입니다. 이 위치를 사용자 지정하려면 SPRING_DEVTOOLS_HOME 환경 변수 또는 spring.devtools.home 시스템 속성을 설정합니다.
+
+> Note
+> 
+> $HOME/.config/spring-boot에서 devtools 구성 파일을 찾을 수 없으면 $HOME 디렉토리의 루트에서 .spring-boot-devtools.properties 파일이 있는지 검색합니다.
+> 이를 통해 $HOME/.config/spring-boot 위치를 지원하지 않는 이전 버전의 Spring Boot에 있는 애플리케이션과 devtools 전역 구성을 공유할 수 있습니다.
+
+> Note
+> 
+> 프로필은 devtools 속성/yaml 파일에서 지원되지 않습니다.
+> 
+> .spring-boot-devtools.properties에서 활성화된 프로파일은 프로파일별 구성 파일의 로딩에 영향을 미치지 않습니다.
+> 프로필 특정 파일 이름(spring-boot-devtools-<profile>.properties 형식) 및 YAML 및 속성 파일 모두의 spring.config.activate.on-profile 문서는 지원되지 않습니다.
+ 
+### FileSystemWatcher 구성
+FileSystemWatcher는 특정 시간 간격으로 클래스 변경 사항을 폴링한 다음 더 이상 변경 사항이 없는지 확인하기 위해 미리 정의된 대기 기간 동안 대기하는 방식으로 작동합니다.
+Spring Boot는 파일을 컴파일하고 Spring Boot가 파일을 읽을 수 있는 위치로 복사하는 데 전적으로 IDE에 의존하므로 devtools가 애플리케이션을 다시 시작할 때 특정 변경 사항이 반영되지 않는 경우가 있을 수 있습니다
+이러한 문제가 지속적으로 관찰되면 `spring.devtools.restart.poll-interval` 및 `spring.devtools.restart.quiet-period` 매개변수를 개발 환경에 맞는 값으로 늘리십시오.
+
+```properties
+spring.devtools.restart.poll-interval=2s
+spring.devtools.restart.quiet-period=1s
+```
+
+```yaml
+spring:
+  devtools:
+    restart:
+      poll-interval: "2s"
+      quiet-period: "1s"
+```
+
+모니터링되는 클래스 경로 디렉터리는 이제 변경 사항에 대해 2초마다 폴링되며 추가 클래스 변경 사항이 없는지 확인하기 위해 1초의 대기 기간이 유지됩니다.
+
+### 원격 어플리케이션
+Spring Boot 개발자 도구는 로컬 개발에만 국한되지 않습니다. 응용 프로그램을 원격으로 실행할 때 여러 기능을 사용할 수도 있습니다.
+원격 지원은 보안 위험이 있을 수 있으므로 선택합니다. 신뢰할 수 있는 네트워크에서 실행 중이거나 SSL로 보호된 경우에만 활성화해야 합니다.
+이러한 옵션 중 어느 것도 사용할 수 없는 경우 DevTools의 원격 지원을 사용해서는 안 됩니다. 프로덕션 배포에 대한 지원을 활성화해서는 안 됩니다.
+
+이를 활성화하려면 다음 목록과 같이 리패키징된 아카이브에 devtools가 포함되어 있는지 확인해야 합니다.
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <excludeDevtools>false</excludeDevtools>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+그런 다음 `spring.devtools.remote.secret` 속성을 설정해야 합니다. 중요한 암호나 암호와 마찬가지로 값은 추측하거나 무차별 대입할 수 없도록 고유하고 강력해야 합니다.
+
+원격 devtools 지원은 연결을 허용하는 서버 측 엔드포인트와 IDE에서 실행하는 클라이언트 애플리케이션의 두 부분으로 제공됩니다.
+`spring.devtools.remote.secret` 속성이 설정되면 서버 구성 요소가 자동으로 활성화됩니다. 클라이언트 구성 요소는 수동으로 시작해야 합니다.
+
+> Note
+> 
+> Spring WebFlux 애플리케이션에는 원격 devtools가 지원되지 않습니다.
+ 
+### 원격 클라이언트 애플리케이션 실행
+원격 클라이언트 애플리케이션은 IDE 내에서 실행되도록 설계되었습니다. org.springframework.boot.devtools를 실행해야 합니다.
+연결할 원격 프로젝트와 동일한 클래스 경로가 있는 RemoteSpringApplication. 응용 프로그램의 단일 필수 인수는 연결되는 원격 URL입니다.
+
+예를 들어 Eclipse 또는 Spring 도구를 사용 중이고 Cloud Foundry에 배포한 my-app이라는 프로젝트가 있는 경우 다음을 수행합니다.
+
+- Run 메뉴에서 Run Configurations… 를 선택합니다. 
+- 새 Java 응용 프로그램 "launch configuration"을 만듭니다.
+- my-app 프로젝트를 찾습니다.
+- org.springframework.boot.devtools.RemoteSpringApplication을 기본 클래스로 사용합니다. 
+- 프로그램 인수(또는 원격 URL)에 https://myapp.cfapps.io를 추가합니다.
+
+실행 중인 원격 클라이언트는 다음 목록과 유사할 수 있습니다.
+
+```text
+  .   ____          _                                              __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _          ___               _      \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` |        | _ \___ _ __  ___| |_ ___ \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| []::::::[]   / -_) '  \/ _ \  _/ -_) ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, |        |_|_\___|_|_|_\___/\__\___|/ / / /
+ =========|_|==============|___/===================================/_/_/_/
+ :: Spring Boot Remote ::  (v2.6.11-SNAPSHOT)
+
+2022-08-17 19:56:56.950  INFO 1190 --- [           main] o.s.b.devtools.RemoteSpringApplication   : Starting RemoteSpringApplication v2.6.11-SNAPSHOT using Java 1.8.0_345 on myhost with PID 1190 (/Users/myuser/.m2/repository/org/springframework/boot/spring-boot-devtools/2.6.11-SNAPSHOT/spring-boot-devtools-2.6.11-SNAPSHOT.jar started by myuser in /opt/apps/)
+2022-08-17 19:56:57.005  INFO 1190 --- [           main] o.s.b.devtools.RemoteSpringApplication   : No active profile set, falling back to 1 default profile: "default"
+2022-08-17 19:56:57.721  INFO 1190 --- [           main] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2022-08-17 19:56:57.742  INFO 1190 --- [           main] o.s.b.devtools.RemoteSpringApplication   : Started RemoteSpringApplication in 1.493 seconds (JVM running for 2.228)
+```
+
+> Note
+> 
+> 원격 클라이언트는 실제 애플리케이션과 동일한 클래스 경로를 사용하기 때문에 애플리케이션 속성을 직접 읽을 수 있습니다. 
+> 이것이 spring.devtools.remote.secret 속성을 읽고 인증을 위해 서버로 전달하는 방법입니다.
+
+> Tip
+> 
+> 트래픽이 암호화되고 암호를 가로챌 수 없도록 항상 https://를 연결 프로토콜로 사용하는 것이 좋습니다.
+
+> Tip
+> 
+> 프록시를 사용하여 원격 애플리케이션에 액세스해야 하는 경우 `spring.devtools.remote.proxy.host` 및 `spring.devtools.remote.proxy.port` 속성을 구성합니다.
+
+### 원격 업데이트
+원격 클라이언트는 로컬 다시 시작과 동일한 방식으로 애플리케이션 클래스 경로의 변경 사항을 모니터링합니다. 업데이트된 모든 리소스는 원격 애플리케이션에 푸시되고 (필요한 경우) 재시작을 트리거합니다.
+이는 로컬에 없는 클라우드 서비스를 사용하는 기능을 반복하는 경우에 유용할 수 있습니다. 일반적으로 원격 업데이트 및 다시 시작은 전체 재구축 및 배포 주기보다 훨씬 빠릅니다.
+
+느린 개발 환경에서는 조용한 기간이 충분하지 않아 클래스의 변경 사항이 일괄 처리로 분할될 수 있습니다.
+클래스 변경 사항의 첫 번째 배치가 업로드된 후 서버가 다시 시작됩니다. 서버가 다시 시작 중이므로 다음 배치를 애플리케이션으로 보낼 수 없습니다.
+
+이는 일반적으로 RemoteSpringApplication 로그에 일부 클래스 업로드 실패에 대한 경고와 그에 따른 재시도로 나타납니다.
+그러나 애플리케이션 코드 불일치 및 변경 사항의 첫 배치가 업로드된 후 재시작 실패로 이어질 수도 있습니다
+이러한 문제가 지속적으로 관찰되면 `spring.devtools.restart.poll-interval` 및 `spring.devtools.restart.quiet-period` 매개변수를 개발 환경에 맞는 값으로 늘리십시오.
+이러한 속성을 구성하려면 Configuring File System Watcher 섹션을 참조하십시오.
+
+> Note
+> 
+> 파일은 원격 클라이언트가 실행 중일 때만 모니터링됩니다. 원격 클라이언트를 시작하기 전에 파일을 변경하면 원격 서버로 푸시되지 않습니다.
+ 
+## 6.9 프로덕션용 애플리케이션 패키징
+실행 가능한 jar는 프로덕션 배포에 사용할 수 있습니다. 독립형이므로 클라우드 기반 배포에도 적합합니다.
+
+상태, 감사, 메트릭 REST 또는 JMX 엔드포인트와 같은 추가 "프로덕션 준비" 기능의 경우 spring-boot-actuator 추가를 고려하십시오. 자세한 내용은 프로덕션 준비 기능을 참조하십시오.
+
+## 6.10 다음에 읽을 내용
+이제 Spring Boot를 사용하는 방법과 따라야 할 몇 가지 모범 사례를 이해해야 합니다.
+이제 특정 Spring Boot 기능에 대해 자세히 알아보거나 건너뛰고 Spring Boot의 "프로덕션 준비" 측면에 대해 읽을 수 있습니다.
