@@ -454,3 +454,275 @@ export JAVA_OPTS=-Xmx1024m
 Spring Boot 애플리케이션은 일반 Java 애플리케이션이므로 JVM 핫스왑은 기본적으로 작동해야 합니다. JVM 핫 스와핑은 대체할 수 있는 바이트코드로 다소 제한됩니다. 보다 완벽한 솔루션을 위해 JRebel을 사용할 수 있습니다.
 
 `spring-boot-devtools` 모듈에는 빠른 애플리케이션 재시작에 대한 지원도 포함되어 있습니다. 자세한 내용은 핫 스와핑 "방법"을 참조하십시오.
+
+## 6.8 개발자 툴들
+Spring Boot에는 애플리케이션 개발 경험을 좀 더 즐겁게 만들 수 있는 추가 도구 세트가 포함되어 있습니다.
+`spring-boot-devtools` 모듈은 추가 개발 시간 기능을 제공하기 위해 모든 프로젝트에 포함될 수 있습니다.
+devtools 지원을 포함하려면 Maven 및 Gradle에 대한 다음 목록에 표시된 대로 빌드에 모듈 종속성을 추가하십시오.
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <optional>true</optional>
+    </dependency>
+</dependencies>
+```
+
+```gradle
+dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+}
+```
+
+> Caution
+> 
+> Devtools는 특히 다중 모듈 프로젝트에서 클래스 로딩 문제를 일으킬 수 있습니다. 클래스 로딩 문제 진단에서는 문제를 진단하고 해결하는 방법을 설명합니다.
+
+> Note
+> 
+> 완전히 패키지된 애플리케이션을 실행할 때 개발자 도구는 자동으로 비활성화됩니다. 애플리케이션이 java -jar에서 시작되거나 특수 클래스 로더에서 시작되면 "프로덕션 애플리케이션"으로 간주됩니다.
+> `spring.devtools.restart.enabled` 시스템 속성을 사용하여 이 동작을 제어할 수 있습니다.
+> 애플리케이션을 시작하는 데 사용된 클래스 로더와 관계없이 devtools를 활성화하려면 `-Dspring.devtools.restart.enabled=true` 시스템 속성을 설정합니다.
+> devtools를 실행하는 것이 보안 위험이 있는 프로덕션 환경에서는 이 작업을 수행해서는 안 됩니다. devtools를 비활성화하려면 종속성을 제외하거나 `-Dspring.devtools.restart.enabled=false` 시스템 속성을 설정합니다.
+
+> Tip
+>
+> Maven에서 선택 사항으로 종속성을 표시하거나 Gradle에서 developmentOnly 구성을 사용하면(위에 표시된 대로) devtools가 프로젝트를 사용하는 다른 모듈에 전이적으로 적용되는 것을 방지할 수 있습니다.
+
+> Tip
+> 
+> 리패키징된 아카이브에는 기본적으로 devtools가 포함되어 있지 않습니다. 특정 원격 devtools 기능을 사용하려면 포함해야 합니다. Maven 플러그인을 사용하는 경우 excludeDevtools 속성을 false로 설정합니다.
+> Gradle 플러그인을 사용하는 경우, developmentOnly 구성을 포함하도록 작업의 클래스 경로를 구성합니다.
+
+### 6.8.1 클래스로딩 문제 진단
+restart 대 reload 섹션에서 설명한 대로 restart 기능은 두 개의 클래스 로더를 사용하여 구현됩니다. 대부분의 애플리케이션에서 이 접근 방식은 잘 작동합니다.
+그러나 때로는 특히 다중 모듈 프로젝트에서 클래스 로딩 문제가 발생할 수 있습니다.
+
+클래스 로딩 문제가 실제로 devtools와 두 클래스 로더로 인해 발생하는지 진단하려면 재시작을 비활성화하십시오. 이 방법으로 문제가 해결되면 전체 프로젝트를 포함하도록 다시 시작 클래스 로더를 사용자 정의하십시오.
+
+### 6.8.2 속성 기본값
+Spring Boot에서 지원하는 여러 라이브러리는 캐시를 사용하여 성능을 향상시킵니다. 예를 들어 템플릿 엔진은 컴파일된 템플릿을 캐시하여 반복적으로 템플릿 파일을 구문 분석하지 않도록 합니다.
+또한 Spring MVC는 정적 리소스를 제공할 때 응답에 HTTP 캐싱 헤더를 추가할 수 있습니다.
+
+캐싱은 프로덕션 환경에서 매우 유용하지만 개발 중에는 비생산적일 수 있으므로 방금 애플리케이션에서 변경한 내용을 볼 수 없습니다. 이러한 이유로 `spring-boot-devtools`는 기본적으로 캐싱 옵션을 비활성화합니다.
+
+캐시 옵션은 일반적으로 `application.properties` 파일의 설정으로 구성됩니다. 예를 들어 Thymeleaf는 `spring.thymeleaf.cache` 속성을 제공합니다.이러한 속성을 수동으로 설정할 필요 없이 `spring-boot-devtools` 모듈은 합리적인 개발 시간 구성을 자동으로 적용합니다.
+
+다음 표에는 적용되는 모든 속성이 나열되어 있습니다.
+
+| 이름                                             | 기본값    |
+|------------------------------------------------|--------|
+| server.error.include-binding-errors            | always |
+| server.error.include-message                   | always |
+| server.error.include-stacktrace                | always |
+| server.servlet.jsp.init-parameters.development | true   |
+| server.servlet.session.persistent              | true   |
+| spring.freemarker.cache                        | false  |
+| spring.groovy.template.cache                   | false  |
+| spring.h2.console.enabled                      | true   |
+| spring.mustache.cache                          | false  |
+| spring.mvc.log-resolved-exception              | true   |
+| spring.reactor.debug            | true   |
+| spring.template.provider.cache            | false  |
+| spring.thymeleaf.cache            | false  |
+| spring.web.resources.cache.period            | 0      |
+| spring.web.resources.chain.cache            | false  |
+
+> note
+> 
+> 속성 기본값을 적용하지 않으려면 `application.properties`에서 `spring.devtools.add-properties`를 false로 설정할 수 있습니다.
+
+Spring MVC 및 Spring WebFlux 애플리케이션을 개발하는 동안 웹 요청에 대한 추가 정보가 필요하므로 개발자 도구는 웹 로깅 그룹에 대해 DEBUG 로깅을 활성화하도록 제안합니다.
+그러면 들어오는 요청, 처리 중인 처리기, 응답 결과 및 기타 세부 정보에 대한 정보가 제공됩니다.
+모든 요청 세부 정보(잠재적으로 민감한 정보 포함)를 기록하려면 `spring.mvc.log-request-details` 또는 `spring.codec.log-request-details` 구성 속성을 켤 수 있습니다.
+
+### 6.8.3. 자동 재실행
+spring-boot-devtools를 사용하는 애플리케이션은 클래스 경로의 파일이 변경될 때마다 자동으로 다시 시작됩니다.
+이것은 코드 변경에 대한 매우 빠른 피드백 루프를 제공하므로 IDE에서 작업할 때 유용한 기능이 될 수 있습니다.
+기본적으로 디렉토리를 가리키는 클래스 경로의 모든 항목은 변경 사항에 대해 모니터링됩니다.
+static assets 및 뷰 템플릿과 같은 특정 리소스는 애플리케이션을 다시 시작할 필요가 없습니다.
+
+> 다시 시작 트리거
+> 
+> DevTools가 클래스 경로 리소스를 모니터링하므로 재시작을 트리거하는 유일한 방법은 클래스 경로를 업데이트하는 것입니다. IDE를 사용하든 빌드 플러그인 중 하나를 사용하든 재시작을 트리거하려면 수정된 파일을 다시 컴파일해야 합니다.
+> 클래스 경로를 업데이트하는 방법은 사용 중인 도구에 따라 다릅니다.
+> 
+> - Eclipse에서 수정된 파일을 저장하면 클래스 경로가 업데이트되고 다시 시작됩니다.
+> - IntelliJ IDEA에서 프로젝트 빌드(Build +→+ Build Project)는 동일한 효과를 가집니다.
+> - 빌드 플러그인을 사용하는 경우 Maven용 mvn compile 또는 Gradle용 gradle build를 실행하면 다시 시작됩니다.
+
+> Note
+> 
+> 빌드 플러그인을 사용하여 Maven 또는 Gradle로 다시 시작하는 경우 forking set을 사용으로 설정해야 합니다. 
+> forking set를 비활성화하면 devtools에서 사용하는 격리된 애플리케이션 클래스 로더가 생성되지 않고 재시작이 제대로 작동하지 않습니다.
+
+> Tip
+> 
+> 자동 재시작은 LiveReload와 함께 사용할 때 매우 잘 작동합니다. 자세한 내용은 LiveReload 섹션을 참조하십시오.
+> JRebel을 사용하는 경우 동적 클래스 다시 로드를 위해 자동 다시 시작이 비활성화됩니다. 다른 devtools 기능(예: LiveReload 및 속성 재정의)은 계속 사용할 수 있습니다
+
+> Note
+> 
+> DevTools는 다시 시작하는 동안 응용 프로그램 컨텍스트의 종료 후크를 사용하여 닫습니다. 종료 후크(SpringApplication.setRegisterShutdownHook(false))를 비활성화한 경우 제대로 작동하지 않습니다.
+
+> Note
+> 
+> DevTools는 ApplicationContext에서 사용하는 ResourceLoader를 사용자 지정해야 합니다. 
+> 애플리케이션이 이미 제공하는 경우 래핑됩니다. ApplicationContext에서 getResource 메서드의 직접 재정의는 지원되지 않습니다.
+
+> Caution
+> 
+> AspectJ 위빙을 사용할 때는 자동 재시작이 지원되지 않습니다.
+
+> 재시작 vs 다시불러오기
+> 
+> Spring Boot에서 제공하는 재시작 기술은 두 개의 클래스로더를 사용하여 작동합니다.
+> 변경되지 않는 클래스(예: 타사 jar의 클래스)는 기본 클래스 로더에 로드됩니다.
+> 활발히 개발 중인 클래스는 재시작 클래스 로더에 로드됩니다.
+> 응용 프로그램이 다시 시작되면 다시 시작 클래스 로더가 제거되고 새 클래스 로더가 생성됩니다.
+> 이 접근 방식은 기본 클래스 로더가 이미 사용 가능하고 채워져 있기 때문에 애플리케이션 재시작이 일반적으로 "콜드 스타트"보다 훨씬 빠르다는 것을 의미합니다.
+> 
+> 애플리케이션의 재시작이 충분히 빠르지 않거나 클래스 로딩 문제가 발생하는 경우 ZeroTurnaround의 JRebel과 같은 리로딩 기술을 고려할 수 있습니다.
+> 이들은 로드될 때 클래스를 다시 작성하여 다시 로드할 수 있도록 만드는 방식으로 작동합니다.
+
+### 상태 평가의 변경 사항 로깅
+기본적으로 애플리케이션을 다시 시작할 때마다 조건 평가 델타를 보여주는 보고서가 기록됩니다.
+이 보고서는 Bean 추가 또는 제거 및 구성 속성 설정과 같은 변경 사항을 적용할 때 애플리케이션의 자동 구성에 대한 변경 사항을 보여줍니다.
+
+보고서 로깅을 비활성화하려면 다음 속성을 설정합니다.
+
+```properties
+spring.devtools.restart.log-condition-evaluation-delta=false
+```
+
+```yaml
+spring:
+  devtools:
+    restart:
+      log-condition-evaluation-delta: false
+```
+
+### 리소스 제외
+특정 리소스는 변경될 때 반드시 재시작을 트리거할 필요가 없습니다. 예를 들어 Thymeleaf 템플릿은 내부에서 편집할 수 있습니다.
+본적으로 /META-INF/maven, /META-INF/resources, /resources, /static, /public 또는 /templates에서 리소스를 변경하면 재시작이 트리거되지 않지만 `live reload`가 트리거됩니다
+이러한 제외를 사용자 지정하려면 `spring.devtools.restart.exclude` 속성을 사용할 수 있습니다.
+예를 들어 /static 및 /public만 제외하려면 다음 속성을 설정합니다.
+
+```properties
+spring.devtools.restart.exclude=static/**,public/**
+```
+
+```yaml
+spring:
+  devtools:
+    restart:
+      exclude: "static/**,public/**"
+```
+
+> Tip
+> 
+> 이러한 기본값을 유지하고 추가 제외를 추가하려면 대신 `spring.devtools.restart.additional-exclude` 속성을 사용하십시오.
+ 
+### 추가 경로 보기
+클래스 경로에 없는 파일을 변경할 때 애플리케이션을 다시 시작하거나 다시 로드해야 할 수 있습니다
+이렇게 하려면 `spring.devtools.restart.additional-paths` 속성을 사용하여 변경 사항을 감시할 추가 경로를 구성합니다.
+앞에서 설명한 `spring.devtools.restart.exclude` 속성을 사용하여 추가 경로 아래의 변경 사항이 전체 다시 시작 또는 실시간 다시 로드를 트리거할지 여부를 제어할 수 있습니다.
+
+### 다시 시작 비활성화
+다시 시작 기능을 사용하지 않으려면 `spring.devtools.restart.enabled` 속성을 사용하여 비활성화할 수 있습니다.
+대부분의 경우 application.properties에서 이 속성을 설정할 수 있습니다(이렇게 하면 여전히 재시작 클래스 로더가 초기화되지만 파일 변경 사항을 감시하지는 않음).
+
+재시작 지원을 완전히 비활성화해야 하는 경우(예: 특정 라이브러리에서 작동하지 않기 때문에) SpringApplication.run(… )을 호출하기 전에 spring.devtools.restart.enabled 시스템 속성을 false로 설정해야 합니다. 다음 예에 나와 있습니다.
+
+```java
+@SpringBootApplication
+public class MyApplication {
+
+    public static void main(String[] args) {
+        System.setProperty("spring.devtools.restart.enabled", "false");
+        SpringApplication.run(MyApplication.class, args);
+    }
+
+}
+```
+
+### 트리거 파일 사용
+변경된 파일을 지속적으로 컴파일하는 IDE로 작업하는 경우 특정 시간에만 다시 시작하도록 트리거하는 것이 좋습니다.
+이렇게 하려면 실제로 다시 시작 확인을 트리거하려는 경우 수정해야 하는 특수 파일인 "트리거 파일"을 사용할 수 있습니다.
+
+> Note
+> 
+> 파일에 대한 모든 업데이트는 검사를 트리거하지만 실제로 재시작은 Devtools가 할 일이 있음을 감지한 경우에만 발생합니다.
+
+트리거 파일을 사용하려면 `spring.devtools.restart.trigger-file` 속성을 트리거 파일의 이름(경로 제외)으로 설정합니다. 트리거 파일은 클래스 경로 어딘가에 나타나야 합니다.
+
+예를 들어 다음과 같은 구조의 프로젝트가 있는 경우
+
+```text
+src
++- main
+   +- resources
+      +- .reloadtrigger
+```
+
+그러면 트리거 파일 속성은 다음과 같습니다.
+
+```properties
+spring.devtools.restart.trigger-file=.reloadtrigger
+```
+
+```yaml
+spring:
+  devtools:
+    restart:
+      trigger-file: ".reloadtrigger"
+```
+
+다시 시작은 이제 `src/main/resources/.reloadtrigger`가 업데이트된 경우에만 발생합니다.
+
+> Tip
+> 
+> 모든 프로젝트가 동일한 방식으로 작동하도록 `spring.devtools.restart.trigger-file`을 전역 설정으로 설정할 수 있습니다.
+
+일부 IDE에는 트리거 파일을 수동으로 업데이트하지 않아도 되는 기능이 있습니다. Spring Tools for Eclipse 및 IntelliJ IDEA(Ultimate Edition) 모두 이러한 지원을 제공합니다
+Spring Tools를 사용하면 콘솔 보기에서 "reload" 버튼을 사용할 수 있습니다(트리거 파일의 이름이 .reloadtrigger인 경우). IntelliJ IDEA의 경우 설명서의 지침을 따를 수 있습니다.
+
+### 재시작 Classloader 커스터마이징
+다시 시작과 다시 로드 섹션에서 앞서 설명한 것처럼 다시 시작 기능은 두 개의 클래스 로더를 사용하여 구현됩니다. 이로 인해 문제가 발생하면 어떤 클래스 로더에서 로드할 항목을 사용자 정의해야 할 수 있습니다.
+
+기본적으로 IDE에서 열려 있는 모든 프로젝트는 "restart" 클래스 로더로 로드되고 일반 .jar 파일은 "기본" 클래스 로더로 로드됩니다.
+`mvn spring-boot:run` 또는 `gradle bootRun`을 사용하는 경우에도 마찬가지입니다. @SpringBootApplication을 포함하는 프로젝트는 "restart" 클래스 로더로 로드되고 다른 모든 것은 "기본" 클래스 로더로 로드됩니다.
+
+`META-INF/spring-devtools.properties` 파일을 생성하여 다른 클래스 로더로 프로젝트의 일부를 로드하도록 Spring Boot에 지시할 수 있습니다.
+`spring-devtools.properties` 파일에는 `restart.exclude` 및 `restart.include` 접두사가 붙은 속성이 포함될 수 있습니다.
+포함 요소는 "재시작" 클래스 로더로 끌어올려야 하는 항목이고 제외 요소는 "기본" 클래스 로더로 푸시다운해야 하는 항목입니다
+속성 값은 다음 예제와 같이 클래스 경로에 적용되는 정규식 패턴입니다.
+
+```properties
+restart.exclude.companycommonlibs=/mycorp-common-[\\w\\d-\\.]+\\.jar
+restart.include.projectcommon=/mycorp-myproj-[\\w\\d-\\.]+\\.jar
+```
+
+```yaml
+restart:
+  exclude:
+    companycommonlibs: "/mycorp-common-[\\w\\d-\\.]+\\.jar"
+  include:
+    projectcommon: "/mycorp-myproj-[\\w\\d-\\.]+\\.jar"
+```
+
+> Note
+>
+>  속성이 `restart.include.`또는 `restart.exclude.` 시작하는 이상 모든 속성 키는 고유해야 합니다.
+
+> Tip
+> 
+> 클래스 경로의 모든 META-INF/spring-devtools.properties가 로드됩니다. 프로젝트 내부 또는 프로젝트가 사용하는 라이브러리에서 파일을 패키징할 수 있습니다.
+
+### 알려진 제한 사항
+다시 시작 기능은 표준 ObjectInputStream을 사용하여 역직렬화된 개체에서 제대로 작동하지 않습니다.
+데이터를 역직렬화해야 하는 경우 Spring의 ConfigurableObjectInputStream을 Thread.currentThread().getContextClassLoader()와 함께 사용해야 할 수 있습니다.
+
+불행히도 여러 타사 라이브러리는 컨텍스트 클래스 로더를 고려하지 않고 역직렬화합니다. 이러한 문제를 발견하면 원 저작자에게 수정을 요청해야 합니다.
