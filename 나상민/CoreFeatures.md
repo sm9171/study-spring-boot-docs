@@ -300,3 +300,131 @@ ContextRefreshedEvent와 같은 일반적인 Spring Framework 이벤트 외에�
 
 리스너가 컨텍스트에 대한 이벤트와 하위 컨텍스트에 대한 이벤트를 구분할 수 있도록 하려면 애플리케이션 컨텍스트가 삽입되도록 요청한 다음 삽입된 컨텍스트를 이벤트 컨텍스트와 비교해야 합니다.
 컨텍스트는 ApplicationContextAware를 구현하거나 수신기가 빈인 경우 @Autowired를 사용하여 주입할 수 있습니다.
+
+### 7.1.8. 웹 환경
+SpringApplication은 당신을 대신하여 올바른 유형의 ApplicationContext를 생성하려고 시도합니다. WebApplicationType을 결정하는 데 사용되는 알고리즘은 다음과 같습니다.
+- Spring MVC가 있으면 `AnnotationConfigServletWebServerApplicationContext`가 사용됩니다.
+- Spring MVC가 없고 Spring WebFlux가 있는 경우 `AnnotationConfigReactiveWebServerApplicationContext`가 사용됩니다.
+- 그렇지 않으면 `AnnotationConfigApplicationContext`가 사용됩니다.
+
+즉, 동일한 애플리케이션에서 Spring MVC와 Spring WebFlux의 새 WebClient를 사용하는 경우 Spring MVC가 기본적으로 사용됩니다.
+`setWebApplicationType(WebApplicationType)`을 호출하여 쉽게 재정의할 수 있습니다.
+
+`setApplicationContextClass(… )`를 호출하여 사용되는 `ApplicationContext` 유형을 완전히 제어할 수도 있습니다.
+
+> Tip
+> 
+> JUnit 테스트 내에서 SpringApplication을 사용할 때 `setWebApplicationType(WebApplicationType.NONE)`을 호출하는 것이 종종 바람직합니다.
+ 
+### 7.1.9. 어플리케이션 인자값 접근
+`SpringApplication.run(… )`에 전달된 애플리케이션 인수에 액세스해야 하는 경우 `org.springframework.boot.ApplicationArguments` 빈을 주입할 수 있습니다.
+ApplicationArguments 인터페이스는 다음 예제와 같이 원시 String[] 인수와 구문 분석된 옵션 및 비옵션 인수 모두에 대한 액세스를 제공합니다.
+
+```java
+@Component
+public class MyBean {
+
+    public MyBean(ApplicationArguments args) {
+        boolean debug = args.containsOption("debug");
+        List<String> files = args.getNonOptionArgs();
+        if (debug) {
+            System.out.println(files);
+        }
+        // if run with "--debug logfile.txt" prints ["logfile.txt"]
+    }
+
+}
+```
+
+> Tip
+> 
+> Spring Boot는 또한 CommandLinePropertySource를 Spring 환경에 등록합니다. 이렇게 하면 @Value 어노테이션을 사용하여 단일 애플리케이션 인자값를 주입할 수도 있습니다.
+ 
+### 7.1.10. ApplicationRunner 또는 CommandLineRunner 사용
+SpringApplication이 시작된 후 일부 특정 코드를 실행해야 하는 경우 ApplicationRunner 또는 CommandLineRunner 인터페이스를 구현할 수 있습니다.
+두 인터페이스 모두 동일한 방식으로 작동하며 SpringApplication.run(… )이 완료되기 직전에 호출되는 단일 실행 메서드를 제공합니다.
+
+> Note
+> 
+> 이 계약은 애플리케이션 시작 후 트래픽 수락을 시작하기 전에 실행해야 하는 작업에 매우 적합합니다.
+
+`CommandLineRunner` 인터페이스는 응용 프로그램 인수에 대한 액세스를 문자열 배열로 제공하는 반면 `ApplicationRunner`는 앞에서 설명한 ApplicationArguments 인터페이스를 사용합니다.
+다음 예제는 run 메소드가 있는 CommandLineRunner를 보여줍니다.
+
+```java
+@Component
+public class MyCommandLineRunner implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) {
+        // Do something...
+    }
+
+}
+```
+특정 순서로 호출해야 하는 여러 CommandLineRunner 또는 ApplicationRunner 빈이 정의된 경우 `org.springframework.core.Ordered` 인터페이스를 추가로 구현하거나 `org.springframework.core.annotation.Order` 어노테이션을 사용할 수 있습니다.
+
+### 7.1.11. 어플리케이션 종료
+각 SpringApplication은 종료 시 ApplicationContext가 정상적으로 닫히도록 JVM에 종료 후크를 등록합니다.
+모든 표준 Spring 라이프사이클 콜백(예: `DisposableBean` 인터페이스 또는 `@PreDestroy` 어노테이션)을 사용할 수 있습니다.
+
+또한 Bean은 `SpringApplication.exit()`가 호출될 때 특정 종료 코드를 반환하려는 경우 `org.springframework.boot.ExitCodeGenerator` 인터페이스를 구현할 수 있습니다.
+그런 다음 이 종료 코드를 System.exit()에 전달하여 다음 예제와 같이 상태 코드로 반환할 수 있습니다.
+
+```java
+@SpringBootApplication
+public class MyApplication {
+
+    @Bean
+    public ExitCodeGenerator exitCodeGenerator() {
+        return () -> 42;
+    }
+
+    public static void main(String[] args) {
+        System.exit(SpringApplication.exit(SpringApplication.run(MyApplication.class, args)));
+    }
+
+}
+```
+
+또한 `ExitCodeGenerator` 인터페이스는 예외에 의해 구현될 수 있습니다. 이러한 예외가 발생하면 Spring Boot는 구현된 getExitCode() 메서드에서 제공하는 종료 코드를 반환합니다.
+
+### 7.1.12. 관리 기능
+`spring.application.admin.enabled` 속성을 지정하여 애플리케이션의 관리 관련 기능을 활성화할 수 있습니다.
+이는 플랫폼 MBeanServer에서 SpringApplicationAdminMXBean을 노출합니다. 이 기능을 사용하여 Spring Boot 애플리케이션을 원격으로 관리할 수 있습니다. 이 기능은 모든 서비스 래퍼 구현에도 유용할 수 있습니다.
+
+> Tip
+> 
+> 애플리케이션이 실행 중인 HTTP 포트를 알고 싶다면 local.server.port 키를 사용하여 속성을 가져옵니다.
+ 
+### 7.1.13. 애플리케이션 시작 추적
+애플리케이션 시작 중에 SpringApplication 및 ApplicationContext는 애플리케이션 수명 주기, Bean 수명 주기 또는 애플리케이션 이벤트 처리와 관련된 많은 작업을 수행합니다.
+ApplicationStartup을 사용하면 Spring Framework를 통해 StartupStep 객체로 애플리케이션 시작 시퀀스를 추적할 수 있습니다. 이 데이터는 프로파일링 목적으로 수집하거나 애플리케이션 시작 프로세스를 더 잘 이해하기 위해 수집할 수 있습니다.
+
+`SpringApplication` 인스턴스를 설정할 때 `ApplicationStartup` 구현을 선택할 수 있습니다. 예를 들어 `BufferingApplicationStartup`을 사용하려면 다음과 같이 작성할 수 있습니다.
+
+```java
+@SpringBootApplication
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(MyApplication.class);
+        application.setApplicationStartup(new BufferingApplicationStartup(2048));
+        application.run(args);
+    }
+
+}
+```
+
+첫 번째 사용 가능한 구현인 `FlightRecorderApplicationStartup`은 Spring Framework에서 제공됩니다.
+Java Flight Recorder 세션에 Spring 관련 시작 이벤트를 추가하고 애플리케이션을 프로파일링하고 Spring 컨텍스트 수명 주기를 JVM 이벤트(예: 할당, GC, 클래스 로딩 등)와 연관시키기 위한 것입니다.
+일단 구성되면 Flight Recorder를 활성화한 상태에서 애플리케이션을 실행하여 데이터를 기록할 수 있습니다.
+
+```shell
+java -XX:StartFlightRecording:filename=recording.jfr,duration=10s -jar demo.jar
+```
+
+Spring Boot는 BufferingApplicationStartup 변형과 함께 제공됩니다. 이 구현은 시작 단계를 버퍼링하고 이를 외부 메트릭 시스템으로 배출하기 위한 것입니다.
+애플리케이션은 모든 구성 요소에서 BufferingApplicationStartup 유형의 빈을 요청할 수 있습니다.
+
+이 정보를 JSON 문서로 제공하는 시작 엔드포인트를 노출하도록 Spring Boot를 구성할 수도 있습니다.
