@@ -428,3 +428,172 @@ Spring Boot는 BufferingApplicationStartup 변형과 함께 제공됩니다. 이
 애플리케이션은 모든 구성 요소에서 BufferingApplicationStartup 유형의 빈을 요청할 수 있습니다.
 
 이 정보를 JSON 문서로 제공하는 시작 엔드포인트를 노출하도록 Spring Boot를 구성할 수도 있습니다.
+
+## 7.2. 외부화된 구성
+Spring Boot를 사용하면 구성을 외부화하여 다른 환경에서 동일한 애플리케이션 코드로 작업할 수 있습니다.
+Java 속성 파일, YAML 파일, 환경 변수 및 명령줄 인수를 포함하여 다양한 외부 구성 소스를 사용할 수 있습니다.
+
+속성 값은 @Value 어노테이션을 사용하여 빈에 직접 주입하거나 Spring의 환경 추상화를 통해 액세스하거나 @ConfigurationProperties를 통해 구조화된 개체에 바인딩할 수 있습니다.
+
+Spring Boot는 합리적인 값 재정의를 허용하도록 설계된 매우 특별한 PropertySource 순서를 사용합니다. 속성은 다음 순서로 고려됩니다(하위 항목의 값이 이전 항목보다 우선함).
+
+1. 기본 속성(SpringApplication.setDefaultProperties를 설정하여 지정됨).
+2. `@Configuration` 클래스의 `@PropertySource` 어노테이션. 이러한 속성 소스는 응용 프로그램 컨텍스트가 새로 고쳐질 때까지 환경에 추가되지 않습니다.새로 고침이 시작되기 전에 읽히는 `logging.*` 및 `spring.main.*`과 같은 특정 속성을 구성하기에는 너무 늦었습니다.
+3. 구성 데이터(예: `application.properties` 파일).
+4. `random.*`에만 속성이 있는 `RandomValuePropertySource`
+5. OS 환경 변수
+6. Java 시스템 특성(System.getProperties())
+7. `java:comp/env`의 JNDI 속성
+8. `ServletContext` 초기 매개변수
+9. `ServletConfig` 초기 매개변수
+10. `SPRING_APPLICATION_JSON`의 속성(환경 변수 또는 시스템 속성에 내장된 인라인 JSON).
+11. command line 인자 값
+12. 테스트의 properties 속성. 애플리케이션의 특정 부분을 테스트하기 위해 `@SpringBootTest` 및 테스트 어노테이션에서 사용할 수 있습니다.
+13. 테스트의 `@TestPropertySource` 어노테이션.
+14. devtools가 활성화된 경우 `$HOME/.config/spring-boot` 디렉토리의 Devtools 전역 설정 속성
+
+구성 데이터 파일은 다음 순서로 간주됩니다
+
+1. jar 안에 패키지된 애플리케이션 속성(`application.properties` 및 YAML 변형).
+2. jar 안에 패키지된 프로필별 애플리케이션 속성(`application-{profile}.properties` 및 YAML 변형).
+3. 패키징된 jar 외부의 애플리케이션 속성(`application.properties` 및 YAML 변형).
+4. 패키지된 jar 외부의 프로필별 애플리케이션 속성(`application-{profile}.properties` 및 YAML 변형).
+
+> Note
+> 
+> 전체 애플리케이션에 대해 하나의 형식을 고수하는 것이 좋습니다. 동일한 위치에 .properties 및 .yml 형식이 모두 포함된 구성 파일이 있는 경우 .properties가 우선합니다.
+
+구체적인 예를 제공하기 위해 다음 예와 같이 이름 속성을 사용하는 @Component를 개발한다고 가정합니다.
+```java
+@Component
+public class MyBean {
+
+    @Value("${name}")
+    private String name;
+
+    // ...
+
+}
+```
+
+애플리케이션 클래스 경로(예: jar 내부)에서 이름에 대해 합리적인 기본 속성 값을 제공하는 `application.properties` 파일을 가질 수 있습니다
+새 환경에서 실행할 때 이름을 재정의하는 jar 외부에 application.properties 파일을 제공할 수 있습니다. 일회성 테스트의 경우 특정 명령줄 스위치(예: `java -jar app.jar --name="Spring"`)를 사용하여 시작할 수 있습니다.
+
+> Tip
+> 
+> `env` 및 `configprops` 엔드포인트는 속성에 특정 값이 있는 이유를 확인하는 데 유용할 수 있습니다. 이 두 엔드포인트를 사용하여 예기치 않은 속성 값을 진단할 수 있습니다. 자세한 내용은 "프로덕션 준비 기능" 섹션을 참조하십시오.
+ 
+### 7.2.1. 커멘드라인 속성 접근법
+기본적으로 SpringApplication은 모든 명령줄 옵션 인수(즉, --server.port=9000과 같이 --로 시작하는 인수)를 속성으로 변환하고 Spring 환경에 추가합니다. 앞에서 언급했듯이 명령줄 속성은 항상 파일 기반 속성 소스보다 우선합니다.
+
+명령줄 속성을 환경에 추가하지 않으려면 `SpringApplication.setAddCommandLineProperties(false)`를 사용하여 비활성화할 수 있습니다.
+
+### 7.2.2. JSON 애플리케이션 속성
+환경 변수 및 시스템 속성에는 종종 일부 속성 이름을 사용할 수 없음을 의미하는 제한이 있습니다. 이를 돕기 위해 Spring Boot를 사용하면 속성 블록을 단일 JSON 구조로 인코딩할 수 있습니다.
+
+애플리케이션이 시작되면 `spring.application.json` 또는 `SPRING_APPLICATION_JSON` 속성이 구문 분석되어 환경에 추가됩니다.
+
+예를 들어 UN*X 셸의 명령줄에서 환경 변수로 SPRING_APPLICATION_JSON 속성을 제공할 수 있습니다.
+
+```shell
+SPRING_APPLICATION_JSON='{"my":{"name":"test"}}' java -jar myapp.jar
+```
+
+앞의 예에서 Spring 환경에서 `my.name=test`로 끝납니다.
+
+동일한 JSON을 시스템 속성으로 제공할 수도 있습니다.
+
+```shell
+java -Dspring.application.json='{"my":{"name":"test"}}' -jar myapp.jar
+```
+
+또는 커멘드라인 인자를 사용하여 JSON을 제공할 수 있습니다.
+
+```shell
+java -jar myapp.jar --spring.application.json='{"my":{"name":"test"}}'
+```
+
+기존 애플리케이션 서버에 배포하는 경우 `java:comp/env/spring.application.json`이라는 JNDI 변수를 사용할 수도 있습니다.
+
+> Note
+> 
+> JSON의 null 값이 결과 속성 소스에 추가되더라도 `PropertySourcesPropertyResolver`는 null 속성을 누락된 값으로 처리합니다.
+> 즉, JSON은 하위 속성 소스의 속성을 null 값으로 재정의할 수 없습니다.
+
+### 7.2.3. 외부 애플리케이션 속성
+Spring Boot는 애플리케이션이 시작될 때 다음 위치에서 `application.properties` 및 `application.yaml` 파일을 자동으로 찾아 로드합니다.
+
+1. 클래스 경로에서 
+   1. 클래스패스 루트
+   2. 클래스패스 /config 패키지 
+2. 현재 디렉터리에서 
+   1. 1.현재 디렉터리
+   2. 현재 디렉터리 /config 하위 디렉터리
+   3. /config 하위 디렉터리의 직계 하위 디렉터리
+
+목록은 우선 순위에 따라 정렬됩니다(하위 항목의 값이 이전 항목보다 우선함). 로드된 파일의 문서는 Spring 환경에 `PropertySource`로 추가됩니다.
+
+구성 파일 이름으로 `application`이 마음에 들지 않으면 `spring.config.name` 환경 속성을 지정하여 다른 파일 이름으로 전환할 수 있습니다.
+예를 들어 `myproject.properties` 및 `myproject.yaml` 파일을 찾으려면 다음과 같이 애플리케이션을 실행할 수 있습니다.
+
+```shell
+java -jar myproject.jar --spring.config.name=myproject
+```
+
+`spring.config.location` 환경 속성을 사용하여 명시적인 위치를 참조할 수도 있습니다. 이 속성은 확인할 하나 이상의 위치가 쉼표로 구분된 목록을 허용합니다.
+
+다음 예에서는 두 개의 개별 파일을 지정하는 방법을 보여줍니다.
+```shell
+java -jar myproject.jar --spring.config.location=\
+    optional:classpath:/default.properties,\
+    optional:classpath:/override.properties
+```
+
+> Tip
+> 
+> 선택적 접두사를 사용하십시오: 위치가 선택사항이고 위치가 존재하지 않아도 괜찮다면.
+
+> Waring
+> `spring.config.name`, `spring.config.location` 및 `spring.config.additional-location`은 로드해야 하는 파일을 결정하기 위해 매우 초기에 사용됩니다
+> 환경 속성(일반적으로 OS 환경 변수, 시스템 속성 또는 커멘드라인 인자)으로 정의해야 합니다.
+
+`spring.config.location`에 디렉토리(파일이 아닌)가 포함되어 있으면 /로 끝나야 합니다.런타임 시 로드되기 전에 `spring.config.name`에서 생성된 이름이 추가됩니다. `spring.config.location`에 지정된 파일은 직접 가져옵니다.
+
+> Note
+> 
+> 프로필별 파일을 확인하기 위해 디렉터리 및 파일 위치 값도 확장됩니다.
+> 예를 들어 `classpath:myconfig.properties`의 `spring.config.location`이 있는 경우 적절한 `classpath:myconfig-<profile>.properties` 파일도 로드됩니다.
+
+대부분의 경우 추가하는 각 `spring.config.location` 항목은 단일 파일 또는 디렉토리를 참조합니다. 위치는 정의된 순서대로 처리되며 이후 위치는 이전 위치의 값을 재정의할 수 있습니다.
+
+복잡한 위치 설정이 있고 프로필별 구성 파일을 사용하는 경우 Spring Boot가 그룹화 방법을 알 수 있도록 추가 힌트를 제공해야 할 수 있습니다
+위치 그룹은 모두 동일한 수준으로 간주되는 위치 모음입니다.
+예를 들어 모든 클래스 경로 위치를 그룹화한 다음 모든 외부 위치를 그룹화할 수 있습니다. 위치 그룹 내의 항목은 `;`로 구분해야 합니다. 자세한 내용은 "프로필 특정 파일" 섹션의 예를 참조하십시오.
+
+spring.config.location을 사용하여 구성된 위치는 기본 위치를 대체합니다.
+예를 들어, spring.config.location이 optional:classpath:/custom-config/,optional:file:./custom-config/ 값으로 구성된 경우 고려되는 전체 위치 세트는 다음과 같습니다.
+
+1. optional:classpath:custom-config/
+2. optional:file:./custom-config/
+
+추가 위치를 교체하는 것보다 추가하려는 경우 `spring.config.additional-location`을 사용할 수 있습니다.
+추가 위치에서 로드된 속성은 기본 위치의 속성을 재정의할 수 있습니다.
+예를 들어, spring.config.additional-location이 optional:classpath:/custom-config/,optional:file:./custom-config/ 값으로 구성된 경우 고려되는 전체 위치 세트는 다음과 같습니다.
+
+1. optional:classpath:/;optional:classpath:/config/
+2. optional:file:./;optional:file:./config/;optional:file:./config/*/
+3. optional:classpath:custom-config/
+4. optional:file:./custom-config/
+
+이 검색 순서를 사용하면 하나의 구성 파일에서 기본값을 지정한 다음 해당 값을 다른 파일에서 선택적으로 재정의할 수 있습니다. 기본 위치 중 하나의 application.properties(또는 spring.config.name으로 선택한 다른 기본 이름)에서 애플리케이션의 기본값을 제공할 수 있습니다. 
+이러한 기본값은 사용자 지정 위치 중 하나에 있는 다른 파일을 사용하여 런타임에 재정의할 수 있습니다.
+
+> Note
+> 
+> 시스템 속성이 아닌 환경 변수를 사용하는 경우 대부분의 운영 체제는 마침표로 구분된 키 이름을 허용하지 않지만 대신 밑줄을 사용할 수 있습니다(예: spring.config.name 대신 SPRING_CONFIG_NAME). 자세한 내용은 환경 변수에서 바인딩을 참조하십시오.
+
+> Note
+> 
+> 애플리케이션이 서블릿 컨테이너 또는 애플리케이션 서버에서 실행되는 경우 JNDI 속성(java:comp/env에 있음) 또는 서블릿 컨텍스트 초기화 매개변수를 환경 변수 또는 시스템 속성 대신 사용할 수 있습니다
+
+### 선택적 위치
