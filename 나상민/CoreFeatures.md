@@ -1006,3 +1006,88 @@ spring:
       on-profile: "prod | staging"
 myotherprop: "sometimes-set"
 ```
+
+### 7.2.4. 속성 암호화
+Spring Boot는 속성 값 암호화에 대한 내장 지원을 제공하지 않지만 Spring 환경에 포함된 값을 수정하는 데 필요한 후크 포인트를 제공합니다.
+EnvironmentPostProcessor 인터페이스를 사용하면 애플리케이션이 시작되기 전에 환경을 조작할 수 있습니다. 자세한 내용은 시작하기 전에 환경 또는 ApplicationContext 사용자 지정을 참조하십시오.
+
+자격 증명과 암호를 안전하게 저장하는 방법이 필요한 경우 Spring Cloud Vault 프로젝트는 HashiCorp Vault에 외부화된 구성을 저장하기 위한 지원을 제공합니다.
+
+### 7.2.5. YAML 작업
+YAML은 JSON의 상위 집합이므로 계층적 구성 데이터를 지정하기 위한 편리한 형식입니다.
+SpringApplication 클래스는 클래스 경로에 SnakeYAML 라이브러리가 있을 때마다 속성의 대안으로 YAML을 자동으로 지원합니다.
+
+> Note
+> 
+> "Starters"를 사용하면 spring-boot-starter에서 자동으로 SnakeYAML을 제공합니다.
+
+### 속성에 YAML 매핑
+YAML 문서는 계층적 형식에서 Spring 환경과 함께 사용할 수 있는 플랫 구조로 변환해야 합니다. 예를 들어 다음 YAML 문서를 고려하십시오
+
+```yaml
+environments:
+  dev:
+    url: "https://dev.example.com"
+    name: "Developer Setup"
+  prod:
+    url: "https://another.example.com"
+    name: "My Cool App"
+```
+
+환경에서 이러한 속성에 액세스하려면 다음과 같이 평면화됩니다.
+
+```properties
+environments.dev.url=https://dev.example.com
+environments.dev.name=Developer Setup
+environments.prod.url=https://another.example.com
+environments.prod.name=My Cool App
+```
+
+마찬가지로 YAML 목록도 평면화해야 합니다. [인덱스] 역참조자가 있는 properties 키로 표시됩니다. 예를 들어 다음 YAML을 고려하십시오.
+
+```yaml
+my:
+ servers:
+ - "dev.example.com"
+ - "another.example.com"
+```
+
+앞의 예제는 다음 properties으로 변환됩니다.
+
+```properties
+my.servers[0]=dev.example.com
+my.servers[1]=another.example.com
+```
+
+> Tip
+> 
+> [index] 표기법을 사용하는 속성은 Spring Boot의 Binder 클래스를 사용하여 Java List 또는 Set 개체에 바인딩할 수 있습니다. 자세한 내용은 아래의 "유형 안전 구성 속성" 섹션을 참조하십시오.
+ 
+> Waring
+> 
+> YAML 파일은 @PropertySource 또는 @TestPropertySource 어노테이션을 사용하여 로드할 수 없습니다. 따라서 이러한 방식으로 값을 로드해야 하는 경우 속성 파일을 사용해야 합니다.
+ 
+### YAML 직접 로드
+Spring Framework는 YAML 문서를 로드하는 데 사용할 수 있는 두 가지 편리한 클래스를 제공합니다. YamlPropertiesFactoryBean은 YAML을 속성으로 로드하고 YamlMapFactoryBean은 YAML을 맵으로 로드합니다.
+
+YAML을 Spring PropertySource로 로드하려는 경우 YamlPropertySourceLoader 클래스를 사용할 수도 있습니다.
+
+### 7.2.6 임의 값 구성
+`RandomValuePropertySource`는 임의의 값을 주입(예: 비밀 또는 테스트 사례에)하는 데 유용합니다. 다음 예제와 같이 정수, long, uuids 또는 문자열을 생성할 수 있습니다.
+```yaml
+my:
+  secret: "${random.value}"
+  number: "${random.int}"
+  bignumber: "${random.long}"
+  uuid: "${random.uuid}"
+  number-less-than-ten: "${random.int(10)}"
+  number-in-range: "${random.int[1024,65536]}"
+```
+
+`random.int*` 구문은 `OPEN value (,max) CLOSE`입니다. 여기서 `OPEN,CLOSE`는 임의의 문자이고 `value,max`는 정수입니다. max가 제공되면 value는 최소값이고 max는 최대값(제외)입니다.
+
+### 7.2.7. 시스템 환경 속성 구성
+Spring Boot는 환경 속성에 대한 접두사 설정을 지원합니다. 이는 구성 요구 사항이 다른 여러 Spring Boot 애플리케이션에서 시스템 환경을 공유하는 경우에 유용합니다.
+시스템 환경 속성의 접두사는 SpringApplication에서 직접 설정할 수 있습니다.
+
+예를 들어 접두사를 input으로 설정하면 remote.timeout과 같은 속성도 시스템 환경에서 input.remote.timeout으로 해석됩니다.
