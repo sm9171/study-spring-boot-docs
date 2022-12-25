@@ -13,9 +13,9 @@ SpringApplication 클래스는 main() 메서드에서 시작되는 Spring 애플
 @SpringBootApplication
 public class MyApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MyApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
 
 }
 ```
@@ -122,14 +122,14 @@ spring:
 
 테이블 4. 배너 변수
 
-| 변수 명                      |설명|
-|---------------------------|---------|
-| ${application.version}    |MANIFEST.MF에 선언된 애플리케이션의 버전 번호입니다. 예를 들어 Implementation-Version: 1.0은 1.0으로 인쇄됩니다.|
-|${application.formatted-version}|MANIFEST.MF에 선언되고 표시 형식이 지정된 애플리케이션의 버전 번호(대괄호로 둘러싸이고 접두어 v가 붙음). 예를 들어(v1.0)|
-|${spring-boot.version}|사용 중인 Spring Boot 버전입니다. 예를 들어 2.6.11-SNAPSHOT.|
-|${spring-boot.formatted-version}|사용 중인 Spring Boot 버전으로, 표시용으로 형식이 지정되어 있습니다(대괄호로 둘러싸이고 접두어는 v임). 예를 들어(v2.6.11-SNAPSHOT).|
-|${Ansi.NAME} (or ${AnsiColor.NAME}, ${AnsiBackground.NAME}, ${AnsiStyle.NAME})|여기서 NAME은 ANSI 이스케이프 코드의 이름입니다. 자세한 내용은 AnsiPropertySource를 참조하십시오.|
-|${application.title}|MANIFEST.MF에 선언된 애플리케이션의 제목입니다. 예를 들어 구현-제목: MyApp은 MyApp으로 인쇄됩니다.|
+| 변수 명                                                                           | 설명                                                                                        |
+|--------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| ${application.version}                                                         | MANIFEST.MF에 선언된 애플리케이션의 버전 번호입니다. 예를 들어 Implementation-Version: 1.0은 1.0으로 인쇄됩니다.        |
+| ${application.formatted-version}                                               | MANIFEST.MF에 선언되고 표시 형식이 지정된 애플리케이션의 버전 번호(대괄호로 둘러싸이고 접두어 v가 붙음). 예를 들어(v1.0)             |
+| ${spring-boot.version}                                                         | 사용 중인 Spring Boot 버전입니다. 예를 들어 2.6.11-SNAPSHOT.                                           |
+| ${spring-boot.formatted-version}                                               | 사용 중인 Spring Boot 버전으로, 표시용으로 형식이 지정되어 있습니다(대괄호로 둘러싸이고 접두어는 v임). 예를 들어(v2.6.11-SNAPSHOT). |
+| ${Ansi.NAME} (or ${AnsiColor.NAME}, ${AnsiBackground.NAME}, ${AnsiStyle.NAME}) | 여기서 NAME은 ANSI 이스케이프 코드의 이름입니다. 자세한 내용은 AnsiPropertySource를 참조하십시오.                       |
+| ${application.title}                                                           | MANIFEST.MF에 선언된 애플리케이션의 제목입니다. 예를 들어 구현-제목: MyApp은 MyApp으로 인쇄됩니다.                        |
 
 > Tip
 >
@@ -159,11 +159,11 @@ SpringApplication 기본값이 마음에 들지 않으면 대신 로컬 인스�
 @SpringBootApplication
 public class MyApplication {
 
-	public static void main(String[] args) {
-		SpringApplication application = new SpringApplication(MyApplication.class);
-		application.setBannerMode(Banner.Mode.OFF);
-		application.run(args);
-	}
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(MyApplication.class);
+        application.setBannerMode(Banner.Mode.OFF);
+        application.run(args);
+    }
 
 }
 ```
@@ -186,10 +186,10 @@ application.properties 파일을 사용하여 SpringApplication을 구성하는 
 
 ```java
 new SpringApplicationBuilder()
-		.sources(Parent.class)
-		.child(Application.class)
-		.bannerMode(Banner.Mode.OFF)
-		.run(args);
+        .sources(Parent.class)
+        .child(Application.class)
+        .bannerMode(Banner.Mode.OFF)
+        .run(args);
 ```
 
 > Note
@@ -245,17 +245,17 @@ Spring Boot 애플리케이션의 내부 상태는 대부분 Spring ApplicationC
 @Component
 public class MyReadinessStateExporter {
 
-	@EventListener
-	public void onStateChange(AvailabilityChangeEvent<ReadinessState> event) {
-		switch (event.getState()) {
-			case ACCEPTING_TRAFFIC:
-				// create file /tmp/healthy
-				break;
-			case REFUSING_TRAFFIC:
-				// remove file /tmp/healthy
-				break;
-		}
-	}
+    @EventListener
+    public void onStateChange(AvailabilityChangeEvent<ReadinessState> event) {
+        switch (event.getState()) {
+            case ACCEPTING_TRAFFIC:
+                // create file /tmp/healthy
+                break;
+            case REFUSING_TRAFFIC:
+                // remove file /tmp/healthy
+                break;
+        }
+    }
 
 }
 ```
@@ -267,19 +267,19 @@ public class MyReadinessStateExporter {
 @Component
 public class MyLocalCacheVerifier {
 
-	private final ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-	public MyLocalCacheVerifier(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
+    public MyLocalCacheVerifier(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
-	public void checkLocalCache() {
-		try {
-			// ...
-		} catch (CacheCompletelyBrokenException ex) {
-			AvailabilityChangeEvent.publish(this.eventPublisher, ex, LivenessState.BROKEN);
-		}
-	}
+    public void checkLocalCache() {
+        try {
+            // ...
+        } catch (CacheCompletelyBrokenException ex) {
+            AvailabilityChangeEvent.publish(this.eventPublisher, ex, LivenessState.BROKEN);
+        }
+    }
 
 }
 ```
@@ -361,14 +361,14 @@ ApplicationArguments 인터페이스는 다음 예제와 같이 원시 String[] 
 @Component
 public class MyBean {
 
-	public MyBean(ApplicationArguments args) {
-		boolean debug = args.containsOption("debug");
-		List<String> files = args.getNonOptionArgs();
-		if (debug) {
-			System.out.println(files);
-		}
-		// if run with "--debug logfile.txt" prints ["logfile.txt"]
-	}
+    public MyBean(ApplicationArguments args) {
+        boolean debug = args.containsOption("debug");
+        List<String> files = args.getNonOptionArgs();
+        if (debug) {
+            System.out.println(files);
+        }
+        // if run with "--debug logfile.txt" prints ["logfile.txt"]
+    }
 
 }
 ```
@@ -395,10 +395,10 @@ SpringApplication이 시작된 후 일부 특정 코드를 실행해야 하는 �
 @Component
 public class MyCommandLineRunner implements CommandLineRunner {
 
-	@Override
-	public void run(String... args) {
-		// Do something...
-	}
+    @Override
+    public void run(String... args) {
+        // Do something...
+    }
 
 }
 ```
@@ -420,14 +420,14 @@ public class MyCommandLineRunner implements CommandLineRunner {
 @SpringBootApplication
 public class MyApplication {
 
-	@Bean
-	public ExitCodeGenerator exitCodeGenerator() {
-		return () -> 42;
-	}
+    @Bean
+    public ExitCodeGenerator exitCodeGenerator() {
+        return () -> 42;
+    }
 
-	public static void main(String[] args) {
-		System.exit(SpringApplication.exit(SpringApplication.run(MyApplication.class, args)));
-	}
+    public static void main(String[] args) {
+        System.exit(SpringApplication.exit(SpringApplication.run(MyApplication.class, args)));
+    }
 
 }
 ```
@@ -458,11 +458,11 @@ ApplicationStartup을 사용하면 Spring Framework를 통해 StartupStep 객체
 @SpringBootApplication
 public class MyApplication {
 
-	public static void main(String[] args) {
-		SpringApplication application = new SpringApplication(MyApplication.class);
-		application.setApplicationStartup(new BufferingApplicationStartup(2048));
-		application.run(args);
-	}
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(MyApplication.class);
+        application.setApplicationStartup(new BufferingApplicationStartup(2048));
+        application.run(args);
+    }
 
 }
 ```
@@ -524,10 +524,10 @@ Spring Boot는 합리적인 값 재정의를 허용하도록 설계된 매우 �
 @Component
 public class MyBean {
 
-	@Value("${name}")
-	private String name;
+    @Value("${name}")
+    private String name;
 
-	// ...
+    // ...
 
 }
 ```
@@ -988,10 +988,10 @@ spring.config.activate.on-cloud-platform=kubernetes
 
 테이블 5. 활성화 속성
 
-| 속성  | Note                                    |
-|-----|-----------------------------------------|
-| on-profile    | 문서가 활성화되기 위해 일치해야 하는 프로필 표현식            |
-| on-cloud-platform| 문서가 활성화되기 위해 감지되어야 하는 CloudPlatform입니다. |
+| 속성                | Note                                    |
+|-------------------|-----------------------------------------|
+| on-profile        | 문서가 활성화되기 위해 일치해야 하는 프로필 표현식            |
+| on-cloud-platform | 문서가 활성화되기 위해 감지되어야 하는 CloudPlatform입니다. |
 
 예를 들어 다음은 두 번째 문서가 Kubernetes에서 실행될 때만 활성화되고 "prod" 또는 "staging" 프로필이 활성화될 때만 활성화되도록 지정합니다.
 
@@ -1008,20 +1008,24 @@ myotherprop: "sometimes-set"
 ```
 
 ### 7.2.4. 속성 암호화
+
 Spring Boot는 속성 값 암호화에 대한 내장 지원을 제공하지 않지만 Spring 환경에 포함된 값을 수정하는 데 필요한 후크 포인트를 제공합니다.
-EnvironmentPostProcessor 인터페이스를 사용하면 애플리케이션이 시작되기 전에 환경을 조작할 수 있습니다. 자세한 내용은 시작하기 전에 환경 또는 ApplicationContext 사용자 지정을 참조하십시오.
+EnvironmentPostProcessor 인터페이스를 사용하면 애플리케이션이 시작되기 전에 환경을 조작할 수 있습니다. 자세한 내용은 시작하기 전에 환경 또는 ApplicationContext 사용자 지정을
+참조하십시오.
 
 자격 증명과 암호를 안전하게 저장하는 방법이 필요한 경우 Spring Cloud Vault 프로젝트는 HashiCorp Vault에 외부화된 구성을 저장하기 위한 지원을 제공합니다.
 
 ### 7.2.5. YAML 작업
+
 YAML은 JSON의 상위 집합이므로 계층적 구성 데이터를 지정하기 위한 편리한 형식입니다.
 SpringApplication 클래스는 클래스 경로에 SnakeYAML 라이브러리가 있을 때마다 속성의 대안으로 YAML을 자동으로 지원합니다.
 
 > Note
-> 
+>
 > "Starters"를 사용하면 spring-boot-starter에서 자동으로 SnakeYAML을 제공합니다.
 
 ### 속성에 YAML 매핑
+
 YAML 문서는 계층적 형식에서 Spring 환경과 함께 사용할 수 있는 플랫 구조로 변환해야 합니다. 예를 들어 다음 YAML 문서를 고려하십시오
 
 ```yaml
@@ -1047,9 +1051,9 @@ environments.prod.name=My Cool App
 
 ```yaml
 my:
- servers:
- - "dev.example.com"
- - "another.example.com"
+  servers:
+    - "dev.example.com"
+    - "another.example.com"
 ```
 
 앞의 예제는 다음 properties으로 변환됩니다.
@@ -1060,20 +1064,25 @@ my.servers[1]=another.example.com
 ```
 
 > Tip
-> 
-> [index] 표기법을 사용하는 속성은 Spring Boot의 Binder 클래스를 사용하여 Java List 또는 Set 개체에 바인딩할 수 있습니다. 자세한 내용은 아래의 "유형 안전 구성 속성" 섹션을 참조하십시오.
- 
+>
+> [index] 표기법을 사용하는 속성은 Spring Boot의 Binder 클래스를 사용하여 Java List 또는 Set 개체에 바인딩할 수 있습니다. 자세한 내용은 아래의 "유형 안전 구성 속성" 섹션을
+> 참조하십시오.
+
 > Waring
-> 
+>
 > YAML 파일은 @PropertySource 또는 @TestPropertySource 어노테이션을 사용하여 로드할 수 없습니다. 따라서 이러한 방식으로 값을 로드해야 하는 경우 속성 파일을 사용해야 합니다.
- 
+
 ### YAML 직접 로드
-Spring Framework는 YAML 문서를 로드하는 데 사용할 수 있는 두 가지 편리한 클래스를 제공합니다. YamlPropertiesFactoryBean은 YAML을 속성으로 로드하고 YamlMapFactoryBean은 YAML을 맵으로 로드합니다.
+
+Spring Framework는 YAML 문서를 로드하는 데 사용할 수 있는 두 가지 편리한 클래스를 제공합니다. YamlPropertiesFactoryBean은 YAML을 속성으로 로드하고
+YamlMapFactoryBean은 YAML을 맵으로 로드합니다.
 
 YAML을 Spring PropertySource로 로드하려는 경우 YamlPropertySourceLoader 클래스를 사용할 수도 있습니다.
 
 ### 7.2.6 임의 값 구성
+
 `RandomValuePropertySource`는 임의의 값을 주입(예: 비밀 또는 테스트 사례에)하는 데 유용합니다. 다음 예제와 같이 정수, long, uuids 또는 문자열을 생성할 수 있습니다.
+
 ```yaml
 my:
   secret: "${random.value}"
@@ -1084,10 +1093,703 @@ my:
   number-in-range: "${random.int[1024,65536]}"
 ```
 
-`random.int*` 구문은 `OPEN value (,max) CLOSE`입니다. 여기서 `OPEN,CLOSE`는 임의의 문자이고 `value,max`는 정수입니다. max가 제공되면 value는 최소값이고 max는 최대값(제외)입니다.
+`random.int*` 구문은 `OPEN value (,max) CLOSE`입니다. 여기서 `OPEN,CLOSE`는 임의의 문자이고 `value,max`는 정수입니다. max가 제공되면 value는 최소값이고
+max는 최대값(제외)입니다.
 
 ### 7.2.7. 시스템 환경 속성 구성
+
 Spring Boot는 환경 속성에 대한 접두사 설정을 지원합니다. 이는 구성 요구 사항이 다른 여러 Spring Boot 애플리케이션에서 시스템 환경을 공유하는 경우에 유용합니다.
 시스템 환경 속성의 접두사는 SpringApplication에서 직접 설정할 수 있습니다.
 
 예를 들어 접두사를 input으로 설정하면 remote.timeout과 같은 속성도 시스템 환경에서 input.remote.timeout으로 해석됩니다.
+
+### 7.2.8. 형식이 안전한 구성 속성
+
+@Value("${property}") 어노테이션을 사용하여 구성 속성을 삽입하는 것은 때때로 번거로울 수 있습니다. 특히 여러 속성으로 작업하거나 데이터가 기본적으로 계층적일 경우 더욱 그렇습니다.
+Spring Boot는 강력한 형식의 빈이 애플리케이션의 구성을 관리하고 유효성을 검사할 수 있도록 하는 속성 작업의 대체 방법을 제공합니다.
+
+> Tip
+>
+> @Value와 유형 안전 구성 속성의 차이점도 참조하십시오.
+
+### JavaBean 속성 바인딩
+
+다음 예제와 같이 표준 JavaBean 속성을 선언하는 빈을 바인딩할 수 있습니다.
+
+```java
+
+@ConfigurationProperties("my.service")
+public class MyProperties {
+
+    private boolean enabled;
+
+    private InetAddress remoteAddress;
+
+    private final Security security = new Security();
+
+    // getters / setters...
+
+    public static class Security {
+
+        private String username;
+
+        private String password;
+
+        private List<String> roles = new ArrayList<>(Collections.singleton("USER"));
+
+        // getters / setters...
+
+    }
+
+}
+```
+
+앞의 POJO는 다음 속성을 정의합니다.
+
+- my.service.enabled, 기본값은 false입니다.
+- my.service.remote-address, 문자열에서 강제할 수 있는 유형 포함.
+- my.service.security.username, 속성 이름으로 이름이 결정되는 중첩된 "보안" 개체 포함. 특히 유형이 전혀 사용되지 않으며 SecurityProperties일 수 있습니다.
+- my.service.security.password.
+- my.service.security.roles(기본값이 USER인 String 컬렉션 포함)
+
+> Note
+>
+> 속성 파일, YAML 파일, 환경 변수 및 기타 메커니즘을 통해 구성되는 Spring Boot에서 사용 가능한 @ConfigurationProperties 클래스에 매핑되는 속성은 공용 API이지만 클래스 자체의
+> 접근자(getter/setter)는 직접 사용.
+
+> Note
+>
+> 이러한 배열은 기본 빈 생성자에 의존하며 getter 및 setter는 일반적으로 Spring MVC에서와 같이 표준 Java Beans property descriptors를 통해 바인딩되기 때문에 필수입니다.
+> 다음과 같은 경우 setter를 생략할 수 있습니다.
+> - Map들은 초기화되는 한 getter가 필요하지만 바인더에 의해 변경될 수 있으므로 setter가 반드시 필요한 것은 아닙니다.
+> - 컬렉션 및 배열은 인덱스(일반적으로 YAML 사용)를 통해 또는 쉼표로 구분된 단일 값(속성)을 사용하여 액세스할 수 있습니다. 후자의 경우 세터는 필수입니다. 이러한 유형에 대해서는 항상 setter를
+    추가하는 것이 좋습니다. 컬렉션을 초기화하는 경우 이전 예제에서와 같이 변경할 수 없는지 확인하십시오.
+> - 중첩된 POJO 속성이 초기화되면(이전 예제의 Security 필드와 같이) setter가 필요하지 않습니다. 바인더가 기본 생성자를 사용하여 즉석에서 인스턴스를 생성하도록 하려면 setter가 필요합니다.
+>
+> 어떤 사람들은 Project Lombok을 사용하여 게터와 세터를 자동으로 추가합니다. 객체를 인스턴스화하기 위해 컨테이너에 의해 자동으로 사용되기 때문에 Lombok이 이러한 유형에 대한 특정 생성자를 생성하지
+> 않는지 확인하십시오.
+>
+> 마지막으로 표준 Java Bean 속성만 고려되며 정적 속성에 대한 바인딩은 지원되지 않습니다.
+
+### 생성자 바인딩
+
+이전 섹션의 예제는 다음 예제와 같이 변경할 수 없는 방식으로 다시 작성할 수 있습니다.
+
+```java
+
+@ConstructorBinding
+@ConfigurationProperties("my.service")
+public class MyProperties {
+
+    // fields...
+
+    public MyProperties(boolean enabled, InetAddress remoteAddress, Security security) {
+        this.enabled = enabled;
+        this.remoteAddress = remoteAddress;
+        this.security = security;
+    }
+
+    // getters...
+
+    public static class Security {
+
+        // fields...
+
+        public Security(String username, String password, @DefaultValue("USER") List<String> roles) {
+            this.username = username;
+            this.password = password;
+            this.roles = roles;
+        }
+
+        // getters...
+
+    }
+
+}
+```
+
+이 설정에서 @ConstructorBinding 주석은 생성자 바인딩을 사용해야 함을 나타내는 데 사용됩니다.
+즉, 바인더는 바인딩하려는 매개 변수가 있는 생성자를 찾을 것으로 예상합니다.
+Java 16 이상을 사용하는 경우 생성자 바인딩을 레코드와 함께 사용할 수 있습니다. 이 경우 레코드에 여러 생성자가 없으면 @ConstructorBinding을 사용할 필요가 없습니다.
+
+@ConstructorBinding 클래스의 중첩 멤버(예: 위 예제의 Security)도 해당 생성자를 통해 바인딩됩니다.
+
+기본값은 생성자 매개변수에서 @DefaultValue를 사용하거나 Java 16 이상을 사용하는 경우 레코드 구성요소를 사용하여 지정할 수 있습니다. 문자열 값을 누락된 속성의 대상 유형으로 강제 변환하기 위해 변환
+서비스가 적용됩니다.
+
+이전 예제를 참조하면 보안에 바인딩된 속성이 없으면 MyProperties 인스턴스에는 보안을 위한 null 값이 포함됩니다.
+바인딩된 속성이 없는 경우에도 Security의 null이 아닌 인스턴스를 반환하려면 빈 @DefaultValue 주석을 사용하면 됩니다.
+
+```java
+public MyProperties(boolean enabled,InetAddress remoteAddress,@DefaultValue Security security){
+        this.enabled=enabled;
+        this.remoteAddress=remoteAddress;
+        this.security=security;
+        }
+```
+
+> Note
+>
+> 생성자 바인딩을 사용하려면 @EnableConfigurationProperties 또는 구성 속성 스캔을 사용하여 클래스를 활성화해야 합니다.
+> 일반 Spring 메커니즘으로 생성된 빈(예: @Component 빈, @Bean 메서드를 사용하여 생성된 빈 또는 @Import를 사용하여 로드된 빈)에는 생성자 바인딩을 사용할 수 없습니다.
+
+> Tip
+>
+> 클래스에 대한 생성자가 둘 이상인 경우 바인딩해야 하는 생성자에서 @ConstructorBinding을 직접 사용할 수도 있습니다.
+
+> Note
+>
+> @ConfigurationProperties와 함께 java.util.Optional을 사용하는 것은 주로 반환 유형으로 사용하기 위한 것이므로 권장되지 않습니다. 따라서 구성 속성 주입에 적합하지 않습니다.
+> 다른 유형의 속성과의 일관성을 위해 선택적 속성을 선언하고 값이 없는 경우 빈 선택적 대신 null이 바인딩됩니다.
+
+### @ConfigurationProperties 어노테이션 유형 활성화
+
+Spring Boot는 @ConfigurationProperties 유형을 바인딩하고 빈으로 등록하는 인프라를 제공합니다.
+클래스별로 구성 속성을 활성화하거나 구성 요소 검색과 유사한 방식으로 작동하는 구성 속성 검색을 활성화할 수 있습니다.
+
+경우에 따라 @ConfigurationProperties 어노테이션이 달린 클래스는 스캔에 적합하지 않을 수 있습니다. 예를 들어 자체 자동 구성을 개발하거나 조건부로 활성화하려는 경우입니다.
+이러한 경우 @EnableConfigurationProperties 어노테이션을 사용하여 처리할 유형 목록을 지정합니다. 다음 예제와 같이 모든 @Configuration 클래스에서 이 작업을 수행할 수 있습니다.
+
+```java
+
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(SomeProperties.class)
+public class MyConfiguration {
+
+}
+```
+
+구성 속성 스캔을 사용하려면 애플리케이션에 @ConfigurationPropertiesScan 어노테이션을 추가하세요.
+일반적으로 @SpringBootApplication 어노테이션이 달린 기본 애플리케이션 클래스에 추가되지만 모든 @Configuration 클래스에 추가할 수 있습니다.
+기본적으로 어노테이션을 선언하는 클래스의 패키지에서 스캔이 발생합니다. 검사할 특정 패키지를 정의하려는 경우 다음 예와 같이 수행할 수 있습니다.
+
+```java
+
+@SpringBootApplication
+@ConfigurationPropertiesScan({"com.example.app", "com.example.another"})
+public class MyApplication {
+
+}
+```
+
+> Memo
+>
+> @ConfigurationProperties빈이 구성 속성 스캔을 사용하거나 를 통해 등록 되면 @EnableConfigurationProperties빈의 일반적인 이름은 <prefix>-<fqn> 여기서 는
+> 어노테이션 <prefix>에 지정된 환경 키 접두어 이고 빈의 정규화된 이름입니다. 어노테이션이 접두부를 제공하지 않으면 Bean의 완전한 이름만 사용됩니다.@ConfigurationProperties<fqn>
+>
+> 위 예제의 빈 이름은 com.example.app-com.example.app.SomeProperties입니다.
+
+@ConfigurationProperties는 환경만 처리하고 특히 컨텍스트에서 다른 빈을 주입하지 않는 것이 좋습니다.
+코너 케이스의 경우 세터 주입을 사용하거나 프레임워크에서 제공하는 *Aware 인터페이스(예: 환경에 액세스해야 하는 경우 EnvironmentAware)를 사용할 수 있습니다.
+여전히 생성자를 사용하여 다른 빈을 주입하려면 구성 속성 빈에 @Component로 어노테이션을 달고 JavaBean 기반 속성 바인딩을 사용해야 합니다.
+
+### @ConfigurationProperties 어노테이션 유형 사용
+
+이 스타일의 구성은 다음 예제와 같이 SpringApplication 외부 YAML 구성에서 특히 잘 작동합니다.
+
+```yaml
+my:
+  service:
+    remote-address: 192.168.1.1
+    security:
+      username: "admin"
+      roles:
+        - "USER"
+        - "ADMIN"
+```
+
+@ConfigurationProperties 빈으로 작업하려면 다음 예제와 같이 다른 빈과 동일한 방식으로 주입할 수 있습니다.
+
+```java
+
+@Service
+public class MyService {
+
+    private final SomeProperties properties;
+
+    public MyService(SomeProperties properties) {
+        this.properties = properties;
+    }
+
+    public void openConnection() {
+        Server server = new Server(this.properties.getRemoteAddress());
+        server.start();
+        // ...
+    }
+
+    // ...
+
+}
+```
+
+### 타사 구성
+
+클래스에 어노테이션을 추가하는 데 사용할 뿐만 아니라 공용 메서드 @ConfigurationProperties에서도 사용할 수 있습니다 . @Bean 이렇게 하면 제어할 수 없는 타사 구성 요소에 속성을 바인딩하려는
+경우 특히 유용할 수 있습니다.
+
+환경 속성에서 빈을 구성하려면 다음 예제와 같이 해당 빈 등록에 @ConfigurationProperties를 추가합니다.
+
+```java
+
+@Configuration(proxyBeanMethods = false)
+public class ThirdPartyConfiguration {
+
+    @Bean
+    @ConfigurationProperties(prefix = "another")
+    public AnotherComponent anotherComponent() {
+        return new AnotherComponent();
+    }
+
+}
+```
+
+다른 접두사로 정의된 모든 JavaBean 속성은 이전 SomeProperties 예제와 유사한 방식으로 해당 AnotherComponent 빈에 매핑됩니다
+
+### 이완된 바인딩
+
+Spring Boot는 Environment 속성을 @ConfigurationProperties bean에 바인딩하기 위해 일부 완화된 규칙을 사용하므로 Environment 속성 이름과 bean 속성 이름이 정확히
+일치할 필요가 없습니다.
+이것이 유용한 일반적인 예에는 대시로 구분된 환경 속성(예: context-path가 contextPath에 바인딩됨) 및 대문자로 표시된 환경 속성(예: PORT가 포트에 바인딩됨)이 포함됩니다.
+
+예를 들어 다음 @ConfigurationProperties 클래스를 고려하십시오.
+
+```java
+
+@ConfigurationProperties(prefix = "my.main-project.person")
+public class MyPersonProperties {
+
+    private String firstName;
+
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+}
+```
+
+앞의 코드에서 다음 속성 이름을 모두 사용할 수 있습니다.
+
+Table 6. relaxed binding
+
+| 속성                                | 노트                                             |
+|-----------------------------------|------------------------------------------------|
+| my.main-project.person.first-name | .properties 및 .yml 파일에서 사용하도록 권장되는 케밥 케이스.     |
+| my.main-project.person.firstName  | 표준 카멜 케이스 구문.                                  |
+| my.main-project.person.first_name | .properties 및 .yml 파일에서 사용하기 위한 대체 형식인 밑줄 표기법. |
+| MY_MAINPROJECT_PERSON_FIRSTNAME   | 시스템 환경 변수를 사용할 때 권장되는 대문자 형식입니다.               |
+
+> Note
+>
+> 어노테이션의 접두사 값은 kebab 케이스(my.main-project.person와 같이 소문자 및 -로 구분)여야 합니다.
+
+Table 7. relaxed binding rules per property source
+
+| 속성 소스                 | 심플                                         | 리스트                             |
+|-----------------------|--------------------------------------------|---------------------------------|
+| Properties Files      | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                   | [ ] 또는 쉼표로 구분된 값을 사용하는 표준 목록 구문 |
+| YAML Files            | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                   | 표준 YAML 목록 구문 또는 쉼표로 구분된 값      |
+| Environment Variables | 밑줄을 구분 기호로 사용하는 대문자 형식입니다(환경 변수에서 바인딩 참조). | 밑줄로 둘러싸인 숫자 값(환경 변수에서 바인딩 참조)   |
+| System properties     | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                   | [ ] 또는 쉼표로 구분된 값을 사용하는 표준 목록 구문 |
+
+> Tip
+>
+> 가능하면 my.person.first-name=Rod와 같은 소문자 케밥 형식으로 속성을 저장하는 것이 좋습니다.
+
+### Binding Maps
+
+지도 속성에 바인딩할 때 원래 키 값이 보존되도록 특수 대괄호 표기법을 사용해야 할 수 있습니다. 키가 []로 둘러싸여 있지 않으면 영숫자가 아닌 모든 문자, - 또는 . 제거됩니다.
+
+```yaml
+my:
+  map:
+    "[/key1]": "value1"
+    "[/key2]": "value2"
+    "/key3": "value3"
+```
+
+> Note
+>
+> YAML 파일의 경우 키를 올바르게 구문 분석하려면 대괄호를 따옴표로 묶어야 합니다.
+
+위의 속성은 맵의 키로 /key1, /key2 및 key3을 사용하여 맵에 바인딩됩니다. 슬래시는 대괄호로 묶이지 않았기 때문에 key3에서 제거되었습니다.
+
+스칼라 값에 바인딩할 때 . []로 둘러쌀 필요가 없습니다. 스칼라 값에는 Object를 제외한 java.lang 패키지의 enum 및 모든 유형이 포함됩니다.
+a.b=c를 Map<String, String>에 바인딩하면 . 키에 {"a.b"="c"} 항목이 있는 맵을 반환합니다. 다른 유형의 경우 키에 `.`가 포함되어 있으면 대괄호 표기법을 사용해야 합니다.
+예를 들어 a.b=c를 Map<String, Object>에 바인딩하면 {"a"={"b"="c"}} 항목이 있는 맵이 반환되는 반면 [a.b]=c는 항목이 {인 맵이 반환됩니다. "a.b"="c"}.
+
+### 환경 변수에서 바인딩
+
+대부분의 운영 체제는 환경 변수에 사용할 수 있는 이름에 대해 엄격한 규칙을 적용합니다.
+예를 들어 Linux 셸 변수에는 문자(a ~ z 또는 A ~ Z), 숫자(0 ~ 9) 또는 밑줄 문자(_)만 포함될 수 있습니다. 관례적으로 Unix 쉘 변수는 이름도 대문자로 되어 있습니다.
+
+Spring Boot의 완화된 바인딩 규칙은 가능한 한 이러한 명명 제한과 호환되도록 설계되었습니다.
+
+정식 형식의 속성 이름을 환경 변수 이름으로 변환하려면 다음 규칙을 따를 수 있습니다.
+
+- 점(.)을 밑줄(_)로 교체
+- 대시(-)를 제거하십시오.
+- 대문자로 변환합니다.
+
+예를 들어 구성 속성 spring.main.log-startup-info는 SPRING_MAIN_LOGSTARTUPINFO라는 환경 변수입니다.
+
+개체 목록에 바인딩할 때 환경 변수를 사용할 수도 있습니다. 목록에 바인딩하려면 변수 이름에서 요소 번호를 밑줄로 묶어야 합니다.
+
+예를 들어 구성 속성 my.service[0].other는 MY_SERVICE_0_OTHER라는 환경 변수를 사용합니다.
+
+### 복합 유형 병합
+
+목록이 둘 이상의 위치에 구성된 경우 재정의는 전체 목록을 대체하여 작동합니다.
+
+예를 들어 이름과 설명 속성이 기본적으로 null인 MyPojo 개체가 있다고 가정합니다. 다음 예제는 MyProperties에서 MyPojo 객체 목록을 노출합니다.
+
+```java
+
+@ConfigurationProperties("my")
+public class MyProperties {
+
+    private final List<MyPojo> list = new ArrayList<>();
+
+    public List<MyPojo> getList() {
+        return this.list;
+    }
+
+}
+```
+
+다음 구성을 고려하십시오.
+
+```yaml
+my:
+  list:
+    - name: "my name"
+      description: "my description"
+---
+spring:
+  config:
+    activate:
+      on-profile: "dev"
+my:
+  list:
+    - name: "my another name"
+```
+
+dev 프로필이 활성화되지 않은 경우 MyProperties.list에는 이전에 정의된 대로 하나의 MyPojo 항목이 포함됩니다.
+그러나 dev 프로필이 활성화된 경우 목록에는 여전히 하나의 항목만 포함됩니다(`my another name`의 이름과 `description`의 널값 포함). 이 구성은 목록에 두 번째 MyPojo 인스턴스를
+추가하지 않으며 항목을 병합하지 않습니다.
+이 구성은 목록에 두 번째 MyPojo 인스턴스를 추가하지 않으며 항목을 병합하지 않습니다.
+
+목록이 여러 프로필에 지정된 경우 우선 순위가 가장 높은 프로필(해당 프로필만)이 사용됩니다. 다음 예를 고려하십시오.
+
+```yaml
+my:
+  list:
+    - name: "my name"
+      description: "my description"
+    - name: "another name"
+      description: "another description"
+---
+spring:
+  config:
+    activate:
+      on-profile: "dev"
+my:
+  list:
+    - name: "my another name"
+```
+
+앞의 예에서 dev 프로필이 활성화된 경우 MyProperties.list에는 하나의 MyPojo 항목(my another name의 이름과 null의 설명 포함)이 포함됩니다.
+YAML의 경우 쉼표로 구분된 목록과 YAML 목록을 모두 사용하여 목록의 콘텐츠를 완전히 재정의할 수 있습니다.
+
+맵 속성의 경우 여러 소스에서 가져온 속성 값으로 바인딩할 수 있습니다.
+그러나 여러 소스의 동일한 속성에 대해서는 우선 순위가 가장 높은 속성이 사용됩니다. 다음 예제는 MyProperties에서 Map<String, MyPojo>를 노출합니다.
+
+```java
+
+@ConfigurationProperties("my")
+public class MyProperties {
+
+    private final Map<String, MyPojo> map = new LinkedHashMap<>();
+
+    public Map<String, MyPojo> getMap() {
+        return this.map;
+    }
+
+}
+```
+
+다음 구성을 고려하십시오.
+
+```yaml
+my:
+  map:
+    key1:
+      name: "my name 1"
+      description: "my description 1"
+---
+spring:
+  config:
+    activate:
+      on-profile: "dev"
+my:
+  map:
+    key1:
+      name: "dev name 1"
+    key2:
+      name: "dev name 2"
+      description: "dev description 2"
+```
+
+개발 프로필이 활성화되지 않은 경우 MyProperties.map에는 키가 key1인 항목 하나(`my name 1`의 이름과 `my description 1`의 설명 포함)가 포함됩니다
+그러나 dev 프로필이 활성화된 경우 map에는 key1(`dev name 1`의 이름과 `my description 1`의 설명 포함) 및 key2(`dev name 2`의 이름과 `my description 2`
+의 설명 포함) 키가 있는 두 개의 항목이 포함됩니다. .
+
+> Note
+>
+> 앞의 병합 규칙은 파일뿐만 아니라 모든 속성 소스의 속성에 적용됩니다.
+
+### 속성 변환
+
+Spring Boot는 @ConfigurationProperties 빈에 바인딩할 때 외부 애플리케이션 속성을 올바른 유형으로 강제 변환하려고 시도합니다.
+사용자 지정 유형 변환이 필요한 경우 ConversionService 빈(conversionService라는 빈 포함) 또는 사용자 지정 속성 편집기(CustomEditorConfigurer 빈을 통해) 또는 사용자
+지정 변환기(@ConfigurationPropertiesBinding으로 주석이 달린 빈 정의 포함)를 제공할 수 있습니다.
+
+> Note
+>
+> 이 bean은 애플리케이션 수명 주기 동안 매우 초기에 요청되므로 ConversionService가 사용하는 종속성을 제한해야 합니다.
+> 일반적으로 필요한 종속성은 생성 시 완전히 초기화되지 않을 수 있습니다.
+> 구성 키 강제 변환에 필요하지 않고 @ConfigurationPropertiesBinding으로 인증된 사용자 정의 변환기에만 의존하는 경우 사용자 정의 ConversionService의 이름을 바꿀 수
+> 있습니다.
+
+### 기간 변환
+
+Spring Boot는 기간 표현을 전담 지원합니다. java.time.Duration 속성을 노출하는 경우 애플리케이션 속성에서 다음 형식을 사용할 수 있습니다.
+
+- 일반 긴 표현(@DurationUnit이 지정되지 않은 경우 기본 단위로 밀리초 사용)
+- java.time.Duration에서 사용하는 표준 ISO-8601 형식
+- 값과 단위가 결합된 보다 읽기 쉬운 형식(10s는 10초를 의미함)
+
+다음 예를 고려하십시오.
+
+```java
+
+@ConfigurationProperties("my")
+public class MyProperties {
+
+    @DurationUnit(ChronoUnit.SECONDS)
+    private Duration sessionTimeout = Duration.ofSeconds(30);
+
+    private Duration readTimeout = Duration.ofMillis(1000);
+
+    // getters / setters...
+
+}
+```
+
+세션 제한 시간을 30초로 지정하려면 30, PT30S 및 30s가 모두 동일합니다. 500ms의 읽기 타임아웃은 500, PT0.5S 및 500ms 형식으로 지정할 수 있습니다.
+
+지원되는 모든 단위를 사용할 수도 있습니다.
+
+- ns for nanoseconds
+- us for microseconds
+- ms for milliseconds
+- s for seconds
+- m for minutes
+- h for hours
+- d for days
+
+기본 단위는 밀리초이며 위의 샘플에 표시된 대로 @DurationUnit을 사용하여 재정의할 수 있습니다
+
+생성자 바인딩을 사용하려는 경우 다음 예제와 같이 동일한 속성을 노출할 수 있습니다.
+
+```java
+
+@ConfigurationProperties("my")
+@ConstructorBinding
+public class MyProperties {
+
+    // fields...
+
+    public MyProperties(@DurationUnit(ChronoUnit.SECONDS) @DefaultValue("30s") Duration sessionTimeout,
+                        @DefaultValue("1000ms") Duration readTimeout) {
+        this.sessionTimeout = sessionTimeout;
+        this.readTimeout = readTimeout;
+    }
+
+    // getters...
+
+}
+```
+
+> Tip
+>
+> Long 속성을 업그레이드하는 경우 밀리초가 아닌 경우 단위를 정의해야 합니다(@DurationUnit 사용). 이렇게 하면 훨씬 더 풍부한 형식을 지원하면서 투명한 업그레이드 경로가 제공됩니다.
+
+### 전환 기간
+
+기간 외에도 Spring Boot는 java.time.Period 유형과도 작동할 수 있습니다. 애플리케이션 속성에서 다음 형식을 사용할 수 있습니다.
+
+- 일반 int 표현(@PeriodUnit이 지정되지 않은 경우 일을 기본 단위로 사용)
+- java.time.Period에서 사용하는 표준 ISO-8601 형식
+- 값과 단위 쌍이 결합된 더 간단한 형식(1y3d는 1년 3일을 의미함)
+
+다음 단위는 간단한 형식으로 지원됩니다.
+
+- y for years
+- m for months
+- w for weeks
+- d for days
+
+> Note
+>
+> java.time.Period 유형은 실제로 주 수를 저장하지 않으며 "7일"을 의미하는 지름길입니다.
+
+### 데이터 크기 변환
+
+Spring Framework에는 크기를 바이트 단위로 표현하는 DataSize 값 유형이 있습니다. DataSize 속성을 노출하는 경우 애플리케이션 속성에서 다음 형식을 사용할 수 있습니다.
+
+- 일반적인 긴 표현(@DataSizeUnit이 지정되지 않은 경우 바이트를 기본 단위로 사용)
+- 값과 단위가 결합된 더 읽기 쉬운 형식(10MB는 10메가바이트를 의미함)
+  다음 예를 고려하십시오.
+
+```java
+
+@ConfigurationProperties("my")
+public class MyProperties {
+
+    @DataSizeUnit(DataUnit.MEGABYTES)
+    private DataSize bufferSize = DataSize.ofMegabytes(2);
+
+    private DataSize sizeThreshold = DataSize.ofBytes(512);
+
+    // getters/setters...
+
+}
+```
+
+버퍼 크기를 10MB로 지정하려면 10MB와 10MB가 동일합니다. 256바이트의 크기 임계값은 256 또는 256B로 지정할 수 있습니다.
+
+지원되는 모든 단위를 사용할 수도 있습니다. 이것들은:
+
+- B for bytes
+- KB for kilobytes
+- MB for megabytes
+- GB for gigabytes
+- TB for terabytes
+
+기본 단위는 바이트이며 위의 샘플에 표시된 대로 @DataSizeUnit을 사용하여 재정의할 수 있습니다.
+
+생성자 바인딩을 사용하려는 경우 다음 예제와 같이 동일한 속성을 노출할 수 있습니다.
+
+```java
+
+@ConfigurationProperties("my")
+@ConstructorBinding
+public class MyProperties {
+
+    // fields...
+
+    public MyProperties(@DataSizeUnit(DataUnit.MEGABYTES) @DefaultValue("2MB") DataSize bufferSize,
+                        @DefaultValue("512B") DataSize sizeThreshold) {
+        this.bufferSize = bufferSize;
+        this.sizeThreshold = sizeThreshold;
+    }
+
+    // getters...
+
+}
+```
+
+> Tip
+>
+> Long 속성을 업그레이드하는 경우 바이트가 아닌 경우 단위를 정의해야 합니다(@DataSizeUnit 사용). 이렇게 하면 훨씬 더 풍부한 형식을 지원하면서 투명한 업그레이드 경로가 제공됩니다.
+
+### @ConfigurationProperties 유효성 검사
+
+Spring Boot는 @ConfigurationProperties 클래스에 Spring의 @Validated 어노테이션이 추가될 때마다 유효성 검사를 시도합니다.
+구성 클래스에서 직접 JSR-303 javax.validation 제약 조건 주석을 사용할 수 있습니다.
+이렇게 하려면 다음 예제와 같이 호환되는 JSR-303 구현이 클래스 경로에 있는지 확인한 다음 필드에 제약 조건 주석을 추가합니다.
+
+```java
+
+@ConfigurationProperties("my.service")
+@Validated
+public class MyProperties {
+
+    @NotNull
+    private InetAddress remoteAddress;
+
+    // getters/setters...
+
+}
+```
+
+> Tip
+>
+> @Validated로 구성 속성을 생성하는 @Bean 메서드에 주석을 달아 유효성 검사를 트리거할 수도 있습니다.
+
+중첩된 속성에 대해 유효성 검사가 항상 트리거되도록 하려면 속성이 없는 경우에도 관련 필드에 @Valid 주석을 달아야 합니다.
+다음 예제는 앞의 MyProperties 예제를 기반으로 합니다.
+
+```java
+
+@ConfigurationProperties("my.service")
+@Validated
+public class MyProperties {
+
+    @NotNull
+    private InetAddress remoteAddress;
+
+    @Valid
+    private final Security security = new Security();
+
+    // getters/setters...
+
+    public static class Security {
+
+        @NotEmpty
+        private String username;
+
+        // getters/setters...
+
+    }
+
+}
+```
+
+configurationPropertiesValidator라는 빈 정의를 생성하여 커스텀 Spring Validator를 추가할 수도 있습니다.
+@Bean 메소드는 정적으로 선언되어야 합니다.구성 속성 유효성 검사기는 애플리케이션의 수명 주기 초기에 생성되며 @Bean 메서드를 정적으로 선언하면 @Configuration 클래스를 인스턴스화하지 않고도 빈을
+생성할 수 있습니다.
+이렇게 하면 초기 인스턴스화로 인해 발생할 수 있는 문제를 피할 수 있습니다.
+
+> Tip
+>
+> spring-boot-actuator 모듈에는 모든 @ConfigurationProperties 빈을 노출하는 엔드포인트가 포함되어 있습니다. 웹 브라우저에서 /actuator/configprops를 가리키거나
+> 동등한 JMX 끝점을 사용합니다. 자세한 내용은 "생산 준비 기능" 섹션을 참조하십시오.
+
+### @ConfigurationProperties vs. @Value
+
+@Value 어노테이션은 핵심 컨테이너 기능이며 유형 안전 구성 속성과 동일한 기능을 제공하지 않습니다. 다음 표에는 @ConfigurationProperties 및 @Value에서 지원하는 기능이 요약되어
+있습니다.
+
+| Feature           | @ConfigurationProperties | @Value                   |
+|-------------------|--------------------------|--------------------------|
+| Relaxed binding   | Yes                      | Limited (see note below) |
+| Meta-data support | Yes                      | No                       |
+| SpEL evaluation   | No                       | Yes                      |
+
+> Note
+> 
+> @Value를 사용하려면 표준 형식(소문자만 사용하는 케밥-케이스)을 사용하여 속성 이름을 참조하는 것이 좋습니다.
+> 이렇게 하면 @ConfigurationProperties를 완화 바인딩할 때와 동일한 논리를 Spring Boot에서 사용할 수 있습니다.
+> 
+> 예를 들어 @Value("${demo.item-price}")는 application.properties 파일에서 demo.item-price 및 demo.itemPrice 형식을 선택하고 시스템 환경에서 DEMO_ITEMPRICE를 선택합니다.
+> @Value("${demo.itemPrice}")를 대신 사용한 경우 demo.item-price 및 DEMO_ITEMPRICE는 고려되지 않습니다.
+
+자신의 구성 요소에 대한 구성 키 집합을 정의하는 경우 @ConfigurationProperties 주석이 달린 POJO에 그룹화하는 것이 좋습니다. 이렇게 하면 자신의 빈에 주입할 수 있는 구조화되고 형식이 안전한 개체가 제공됩니다.
+
+응용 프로그램 속성 파일의 SpEL 표현식은 이러한 파일을 구문 분석하고 환경을 채울 때 처리되지 않습니다. 그러나 @Value에 SpEL 표현식을 작성할 수 있습니다.
+애플리케이션 속성 파일의 속성 값이 SpEL 표현식인 경우 @Value를 통해 소비될 때 평가됩니다.
