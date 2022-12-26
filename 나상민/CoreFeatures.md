@@ -1793,3 +1793,105 @@ configurationPropertiesValidator라는 빈 정의를 생성하여 커스텀 Spri
 
 응용 프로그램 속성 파일의 SpEL 표현식은 이러한 파일을 구문 분석하고 환경을 채울 때 처리되지 않습니다. 그러나 @Value에 SpEL 표현식을 작성할 수 있습니다.
 애플리케이션 속성 파일의 속성 값이 SpEL 표현식인 경우 @Value를 통해 소비될 때 평가됩니다.
+
+## 7.3 프로파일
+Spring Profiles는 애플리케이션 구성의 일부를 분리하고 특정 환경에서만 사용할 수 있도록 하는 방법을 제공합니다.
+다음 예제와 같이 모든 @Component, @Configuration 또는 @ConfigurationProperties를 @Profile로 표시하여 로드 시기를 제한할 수 있습니다.
+
+```java
+@Configuration(proxyBeanMethods = false)
+@Profile("production")
+public class ProductionConfiguration {
+
+    // ...
+
+}
+```
+
+> Note
+> 
+> 자동 스캔이 아닌 @EnableConfigurationProperties를 통해 @ConfigurationProperties 빈을 등록한 경우 @EnableConfigurationProperties 주석이 있는 @Configuration 클래스에 @Profile 주석을 지정해야 합니다.
+> @ConfigurationProperties를 스캔하는 경우 @ConfigurationProperties 클래스 자체에 @Profile을 지정할 수 있다.
+
+spring.profiles.active 환경 속성을 사용하여 활성화된 프로필을 지정할 수 있습니다.
+이 장의 앞부분에서 설명한 방법으로 속성을 지정할 수 있습니다. 예를 들어 다음 예제와 같이 application.properties에 포함할 수 있습니다.
+
+```yaml
+spring:
+  profiles:
+    active: "dev,hsqldb"
+```
+
+--spring.profiles.active=dev,hsqldb 스위치를 사용하여 명령줄에서 지정할 수도 있습니다.
+
+활성화된 프로필이 없으면 기본 프로필이 활성화됩니다. 기본 프로필의 이름은 default이며 다음 예제와 같이 spring.profiles.default 환경 속성을 사용하여 조정할 수 있습니다.
+
+```yaml
+spring:
+  profiles:
+    default: "none"
+```
+
+spring.profiles.active 및 spring.profiles.default는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 즉, spring.config.activate.on-profile에 의해 활성화된 프로필 특정 파일이나 문서에 포함될 수 없습니다.
+
+```yaml
+# this document is valid
+spring:
+  profiles:
+    active: "prod"
+---
+# this document is invalid
+spring:
+  config:
+    activate:
+      on-profile: "prod"
+  profiles:
+    active: "metrics"
+```
+
+### 7.3.1 활성 프로필 추가
+spring.profiles.active 속성은 다른 속성과 동일한 순서 규칙을 따릅니다. 가장 높은 PropertySource가 우선합니다
+즉, application.properties에서 활성 프로필을 지정한 다음 명령줄 스위치를 사용하여 바꿀 수 있습니다.
+
+경우에 따라 활성 프로필을 대체하는 대신 추가하는 속성이 있는 것이 유용합니다. spring.profiles.include 속성은 spring.profiles.active 속성에 의해 활성화된 프로필 위에 활성 프로필을 추가하는 데 사용할 수 있습니다.
+SpringApplication 진입점에는 추가 프로필을 설정하기 위한 Java API도 있습니다. SpringApplication의 setAdditionalProfiles() 메소드를 참조하십시오.
+
+예를 들어, 다음 속성을 가진 애플리케이션이 실행되면 --spring.profiles.active 스위치를 사용하여 실행되는 경우에도 공통 및 로컬 프로파일이 활성화됩니다.
+
+```yaml
+spring:
+  profiles:
+    include:
+      - "common"
+      - "local"
+```
+
+> Warning
+> 
+> spring.profiles.active와 마찬가지로 spring.profiles.include는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 이는 spring.config.activate.on-profile에 의해 활성화된 프로파일 특정 파일이나 문서에 포함될 수 없음을 의미합니다.
+
+다음 섹션에서 설명하는 프로필 그룹은 지정된 프로필이 활성화된 경우 활성 프로필을 추가하는 데 사용할 수도 있습니다.
+
+### 7.3.2. 프로필 그룹
+경우에 따라 애플리케이션에서 정의하고 사용하는 프로필이 너무 세분화되어 사용하기 번거로워질 수 있습니다. 예를 들어 데이터베이스 및 메시징 기능을 독립적으로 활성화하는 데 사용하는 proddb 및 prodmq 프로필이 있을 수 있습니다.
+
+이를 돕기 위해 Spring Boot에서는 프로필 그룹을 정의할 수 있습니다. 프로필 그룹을 사용하면 관련된 프로필 그룹의 논리적 이름을 정의할 수 있습니다.
+
+예를 들어 proddb 및 prodmq 프로필로 구성된 프로덕션 그룹을 만들 수 있습니다.
+
+```yaml
+spring:
+  profiles:
+    group:
+      production:
+      - "proddb"
+      - "prodmq"
+```
+
+이제 --spring.profiles.active=production을 사용하여 애플리케이션을 시작하여 프로덕션, proddb 및 prodmq 프로필을 한 번에 활성화할 수 있습니다.
+
+### 7.3.3. 프로그래밍 방식으로 프로필 설정
+애플리케이션이 실행되기 전에 SpringApplication.setAdditionalProfiles(… )를 호출하여 프로그래밍 방식으로 활성 프로필을 설정할 수 있습니다. Spring의 ConfigurableEnvironment 인터페이스를 사용하여 프로필을 활성화하는 것도 가능합니다.
+
+### 7.3.4 프로필별 구성 파일
+application.properties(또는 application.yml)와 @ConfigurationProperties를 통해 참조되는 파일의 프로필별 변형은 파일로 간주되어 로드됩니다. 자세한 내용은 "프로필 특정 파일"을 참조하십시오.
