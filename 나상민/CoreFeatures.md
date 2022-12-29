@@ -13,9 +13,9 @@ SpringApplication 클래스는 main() 메서드에서 시작되는 Spring 애플
 @SpringBootApplication
 public class MyApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(MyApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(MyApplication.class, args);
+	}
 
 }
 ```
@@ -159,11 +159,11 @@ SpringApplication 기본값이 마음에 들지 않으면 대신 로컬 인스�
 @SpringBootApplication
 public class MyApplication {
 
-    public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(MyApplication.class);
-        application.setBannerMode(Banner.Mode.OFF);
-        application.run(args);
-    }
+	public static void main(String[] args) {
+		SpringApplication application = new SpringApplication(MyApplication.class);
+		application.setBannerMode(Banner.Mode.OFF);
+		application.run(args);
+	}
 
 }
 ```
@@ -186,10 +186,10 @@ application.properties 파일을 사용하여 SpringApplication을 구성하는 
 
 ```java
 new SpringApplicationBuilder()
-        .sources(Parent.class)
-        .child(Application.class)
-        .bannerMode(Banner.Mode.OFF)
-        .run(args);
+		.sources(Parent.class)
+		.child(Application.class)
+		.bannerMode(Banner.Mode.OFF)
+		.run(args);
 ```
 
 > Note
@@ -245,17 +245,17 @@ Spring Boot 애플리케이션의 내부 상태는 대부분 Spring ApplicationC
 @Component
 public class MyReadinessStateExporter {
 
-    @EventListener
-    public void onStateChange(AvailabilityChangeEvent<ReadinessState> event) {
-        switch (event.getState()) {
-            case ACCEPTING_TRAFFIC:
-                // create file /tmp/healthy
-                break;
-            case REFUSING_TRAFFIC:
-                // remove file /tmp/healthy
-                break;
-        }
-    }
+	@EventListener
+	public void onStateChange(AvailabilityChangeEvent<ReadinessState> event) {
+		switch (event.getState()) {
+			case ACCEPTING_TRAFFIC:
+				// create file /tmp/healthy
+				break;
+			case REFUSING_TRAFFIC:
+				// remove file /tmp/healthy
+				break;
+		}
+	}
 
 }
 ```
@@ -267,19 +267,19 @@ public class MyReadinessStateExporter {
 @Component
 public class MyLocalCacheVerifier {
 
-    private final ApplicationEventPublisher eventPublisher;
+	private final ApplicationEventPublisher eventPublisher;
 
-    public MyLocalCacheVerifier(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
-    }
+	public MyLocalCacheVerifier(ApplicationEventPublisher eventPublisher) {
+		this.eventPublisher = eventPublisher;
+	}
 
-    public void checkLocalCache() {
-        try {
-            // ...
-        } catch (CacheCompletelyBrokenException ex) {
-            AvailabilityChangeEvent.publish(this.eventPublisher, ex, LivenessState.BROKEN);
-        }
-    }
+	public void checkLocalCache() {
+		try {
+			// ...
+		} catch (CacheCompletelyBrokenException ex) {
+			AvailabilityChangeEvent.publish(this.eventPublisher, ex, LivenessState.BROKEN);
+		}
+	}
 
 }
 ```
@@ -361,14 +361,14 @@ ApplicationArguments 인터페이스는 다음 예제와 같이 원시 String[] 
 @Component
 public class MyBean {
 
-    public MyBean(ApplicationArguments args) {
-        boolean debug = args.containsOption("debug");
-        List<String> files = args.getNonOptionArgs();
-        if (debug) {
-            System.out.println(files);
-        }
-        // if run with "--debug logfile.txt" prints ["logfile.txt"]
-    }
+	public MyBean(ApplicationArguments args) {
+		boolean debug = args.containsOption("debug");
+		List<String> files = args.getNonOptionArgs();
+		if (debug) {
+			System.out.println(files);
+		}
+		// if run with "--debug logfile.txt" prints ["logfile.txt"]
+	}
 
 }
 ```
@@ -395,10 +395,10 @@ SpringApplication이 시작된 후 일부 특정 코드를 실행해야 하는 �
 @Component
 public class MyCommandLineRunner implements CommandLineRunner {
 
-    @Override
-    public void run(String... args) {
-        // Do something...
-    }
+	@Override
+	public void run(String... args) {
+		// Do something...
+	}
 
 }
 ```
@@ -420,14 +420,14 @@ public class MyCommandLineRunner implements CommandLineRunner {
 @SpringBootApplication
 public class MyApplication {
 
-    @Bean
-    public ExitCodeGenerator exitCodeGenerator() {
-        return () -> 42;
-    }
+	@Bean
+	public ExitCodeGenerator exitCodeGenerator() {
+		return () -> 42;
+	}
 
-    public static void main(String[] args) {
-        System.exit(SpringApplication.exit(SpringApplication.run(MyApplication.class, args)));
-    }
+	public static void main(String[] args) {
+		System.exit(SpringApplication.exit(SpringApplication.run(MyApplication.class, args)));
+	}
 
 }
 ```
@@ -458,11 +458,11 @@ ApplicationStartup을 사용하면 Spring Framework를 통해 StartupStep 객체
 @SpringBootApplication
 public class MyApplication {
 
-    public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(MyApplication.class);
-        application.setApplicationStartup(new BufferingApplicationStartup(2048));
-        application.run(args);
-    }
+	public static void main(String[] args) {
+		SpringApplication application = new SpringApplication(MyApplication.class);
+		application.setApplicationStartup(new BufferingApplicationStartup(2048));
+		application.run(args);
+	}
 
 }
 ```
@@ -524,10 +524,10 @@ Spring Boot는 합리적인 값 재정의를 허용하도록 설계된 매우 �
 @Component
 public class MyBean {
 
-    @Value("${name}")
-    private String name;
+	@Value("${name}")
+	private String name;
 
-    // ...
+	// ...
 
 }
 ```
@@ -1121,25 +1121,25 @@ Spring Boot는 강력한 형식의 빈이 애플리케이션의 구성을 관리
 @ConfigurationProperties("my.service")
 public class MyProperties {
 
-    private boolean enabled;
+	private boolean enabled;
 
-    private InetAddress remoteAddress;
+	private InetAddress remoteAddress;
 
-    private final Security security = new Security();
+	private final Security security = new Security();
 
-    // getters / setters...
+	// getters / setters...
 
-    public static class Security {
+	public static class Security {
 
-        private String username;
+		private String username;
 
-        private String password;
+		private String password;
 
-        private List<String> roles = new ArrayList<>(Collections.singleton("USER"));
+		private List<String> roles = new ArrayList<>(Collections.singleton("USER"));
 
-        // getters / setters...
+		// getters / setters...
 
-    }
+	}
 
 }
 ```
@@ -1181,29 +1181,29 @@ public class MyProperties {
 @ConfigurationProperties("my.service")
 public class MyProperties {
 
-    // fields...
+	// fields...
 
-    public MyProperties(boolean enabled, InetAddress remoteAddress, Security security) {
-        this.enabled = enabled;
-        this.remoteAddress = remoteAddress;
-        this.security = security;
-    }
+	public MyProperties(boolean enabled, InetAddress remoteAddress, Security security) {
+		this.enabled = enabled;
+		this.remoteAddress = remoteAddress;
+		this.security = security;
+	}
 
-    // getters...
+	// getters...
 
-    public static class Security {
+	public static class Security {
 
-        // fields...
+		// fields...
 
-        public Security(String username, String password, @DefaultValue("USER") List<String> roles) {
-            this.username = username;
-            this.password = password;
-            this.roles = roles;
-        }
+		public Security(String username, String password, @DefaultValue("USER") List<String> roles) {
+			this.username = username;
+			this.password = password;
+			this.roles = roles;
+		}
 
-        // getters...
+		// getters...
 
-    }
+	}
 
 }
 ```
@@ -1222,10 +1222,10 @@ Java 16 이상을 사용하는 경우 생성자 바인딩을 레코드와 함께
 
 ```java
 public MyProperties(boolean enabled,InetAddress remoteAddress,@DefaultValue Security security){
-        this.enabled=enabled;
-        this.remoteAddress=remoteAddress;
-        this.security=security;
-        }
+		this.enabled=enabled;
+		this.remoteAddress=remoteAddress;
+		this.security=security;
+		}
 ```
 
 > Note
@@ -1305,19 +1305,19 @@ my:
 @Service
 public class MyService {
 
-    private final SomeProperties properties;
+	private final SomeProperties properties;
 
-    public MyService(SomeProperties properties) {
-        this.properties = properties;
-    }
+	public MyService(SomeProperties properties) {
+		this.properties = properties;
+	}
 
-    public void openConnection() {
-        Server server = new Server(this.properties.getRemoteAddress());
-        server.start();
-        // ...
-    }
+	public void openConnection() {
+		Server server = new Server(this.properties.getRemoteAddress());
+		server.start();
+		// ...
+	}
 
-    // ...
+	// ...
 
 }
 ```
@@ -1334,11 +1334,11 @@ public class MyService {
 @Configuration(proxyBeanMethods = false)
 public class ThirdPartyConfiguration {
 
-    @Bean
-    @ConfigurationProperties(prefix = "another")
-    public AnotherComponent anotherComponent() {
-        return new AnotherComponent();
-    }
+	@Bean
+	@ConfigurationProperties(prefix = "another")
+	public AnotherComponent anotherComponent() {
+		return new AnotherComponent();
+	}
 
 }
 ```
@@ -1358,15 +1358,15 @@ Spring Boot는 Environment 속성을 @ConfigurationProperties bean에 바인딩�
 @ConfigurationProperties(prefix = "my.main-project.person")
 public class MyPersonProperties {
 
-    private String firstName;
+	private String firstName;
 
-    public String getFirstName() {
-        return this.firstName;
-    }
+	public String getFirstName() {
+		return this.firstName;
+	}
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
 
 }
 ```
@@ -1451,11 +1451,11 @@ Spring Boot의 완화된 바인딩 규칙은 가능한 한 이러한 명명 제�
 @ConfigurationProperties("my")
 public class MyProperties {
 
-    private final List<MyPojo> list = new ArrayList<>();
+	private final List<MyPojo> list = new ArrayList<>();
 
-    public List<MyPojo> getList() {
-        return this.list;
-    }
+	public List<MyPojo> getList() {
+		return this.list;
+	}
 
 }
 ```
@@ -1512,11 +1512,11 @@ YAML의 경우 쉼표로 구분된 목록과 YAML 목록을 모두 사용하여 
 @ConfigurationProperties("my")
 public class MyProperties {
 
-    private final Map<String, MyPojo> map = new LinkedHashMap<>();
+	private final Map<String, MyPojo> map = new LinkedHashMap<>();
 
-    public Map<String, MyPojo> getMap() {
-        return this.map;
-    }
+	public Map<String, MyPojo> getMap() {
+		return this.map;
+	}
 
 }
 ```
@@ -1579,12 +1579,12 @@ Spring Boot는 기간 표현을 전담 지원합니다. java.time.Duration 속�
 @ConfigurationProperties("my")
 public class MyProperties {
 
-    @DurationUnit(ChronoUnit.SECONDS)
-    private Duration sessionTimeout = Duration.ofSeconds(30);
+	@DurationUnit(ChronoUnit.SECONDS)
+	private Duration sessionTimeout = Duration.ofSeconds(30);
 
-    private Duration readTimeout = Duration.ofMillis(1000);
+	private Duration readTimeout = Duration.ofMillis(1000);
 
-    // getters / setters...
+	// getters / setters...
 
 }
 ```
@@ -1611,15 +1611,15 @@ public class MyProperties {
 @ConstructorBinding
 public class MyProperties {
 
-    // fields...
+	// fields...
 
-    public MyProperties(@DurationUnit(ChronoUnit.SECONDS) @DefaultValue("30s") Duration sessionTimeout,
-                        @DefaultValue("1000ms") Duration readTimeout) {
-        this.sessionTimeout = sessionTimeout;
-        this.readTimeout = readTimeout;
-    }
+	public MyProperties(@DurationUnit(ChronoUnit.SECONDS) @DefaultValue("30s") Duration sessionTimeout,
+	                    @DefaultValue("1000ms") Duration readTimeout) {
+		this.sessionTimeout = sessionTimeout;
+		this.readTimeout = readTimeout;
+	}
 
-    // getters...
+	// getters...
 
 }
 ```
@@ -1660,12 +1660,12 @@ Spring Framework에는 크기를 바이트 단위로 표현하는 DataSize 값 �
 @ConfigurationProperties("my")
 public class MyProperties {
 
-    @DataSizeUnit(DataUnit.MEGABYTES)
-    private DataSize bufferSize = DataSize.ofMegabytes(2);
+	@DataSizeUnit(DataUnit.MEGABYTES)
+	private DataSize bufferSize = DataSize.ofMegabytes(2);
 
-    private DataSize sizeThreshold = DataSize.ofBytes(512);
+	private DataSize sizeThreshold = DataSize.ofBytes(512);
 
-    // getters/setters...
+	// getters/setters...
 
 }
 ```
@@ -1690,15 +1690,15 @@ public class MyProperties {
 @ConstructorBinding
 public class MyProperties {
 
-    // fields...
+	// fields...
 
-    public MyProperties(@DataSizeUnit(DataUnit.MEGABYTES) @DefaultValue("2MB") DataSize bufferSize,
-                        @DefaultValue("512B") DataSize sizeThreshold) {
-        this.bufferSize = bufferSize;
-        this.sizeThreshold = sizeThreshold;
-    }
+	public MyProperties(@DataSizeUnit(DataUnit.MEGABYTES) @DefaultValue("2MB") DataSize bufferSize,
+	                    @DefaultValue("512B") DataSize sizeThreshold) {
+		this.bufferSize = bufferSize;
+		this.sizeThreshold = sizeThreshold;
+	}
 
-    // getters...
+	// getters...
 
 }
 ```
@@ -1719,10 +1719,10 @@ Spring Boot는 @ConfigurationProperties 클래스에 Spring의 @Validated 어노
 @Validated
 public class MyProperties {
 
-    @NotNull
-    private InetAddress remoteAddress;
+	@NotNull
+	private InetAddress remoteAddress;
 
-    // getters/setters...
+	// getters/setters...
 
 }
 ```
@@ -1740,22 +1740,22 @@ public class MyProperties {
 @Validated
 public class MyProperties {
 
-    @NotNull
-    private InetAddress remoteAddress;
+	@NotNull
+	private InetAddress remoteAddress;
 
-    @Valid
-    private final Security security = new Security();
+	@Valid
+	private final Security security = new Security();
 
-    // getters/setters...
+	// getters/setters...
 
-    public static class Security {
+	public static class Security {
 
-        @NotEmpty
-        private String username;
+		@NotEmpty
+		private String username;
 
-        // getters/setters...
+		// getters/setters...
 
-    }
+	}
 
 }
 ```
@@ -1782,35 +1782,40 @@ configurationPropertiesValidator라는 빈 정의를 생성하여 커스텀 Spri
 | SpEL evaluation   | No                       | Yes                      |
 
 > Note
-> 
+>
 > @Value를 사용하려면 표준 형식(소문자만 사용하는 케밥-케이스)을 사용하여 속성 이름을 참조하는 것이 좋습니다.
 > 이렇게 하면 @ConfigurationProperties를 완화 바인딩할 때와 동일한 논리를 Spring Boot에서 사용할 수 있습니다.
-> 
-> 예를 들어 @Value("${demo.item-price}")는 application.properties 파일에서 demo.item-price 및 demo.itemPrice 형식을 선택하고 시스템 환경에서 DEMO_ITEMPRICE를 선택합니다.
+>
+> 예를 들어 @Value("${demo.item-price}")는 application.properties 파일에서 demo.item-price 및 demo.itemPrice 형식을 선택하고 시스템 환경에서
+> DEMO_ITEMPRICE를 선택합니다.
 > @Value("${demo.itemPrice}")를 대신 사용한 경우 demo.item-price 및 DEMO_ITEMPRICE는 고려되지 않습니다.
 
-자신의 구성 요소에 대한 구성 키 집합을 정의하는 경우 @ConfigurationProperties 주석이 달린 POJO에 그룹화하는 것이 좋습니다. 이렇게 하면 자신의 빈에 주입할 수 있는 구조화되고 형식이 안전한 개체가 제공됩니다.
+자신의 구성 요소에 대한 구성 키 집합을 정의하는 경우 @ConfigurationProperties 주석이 달린 POJO에 그룹화하는 것이 좋습니다. 이렇게 하면 자신의 빈에 주입할 수 있는 구조화되고 형식이 안전한
+개체가 제공됩니다.
 
 응용 프로그램 속성 파일의 SpEL 표현식은 이러한 파일을 구문 분석하고 환경을 채울 때 처리되지 않습니다. 그러나 @Value에 SpEL 표현식을 작성할 수 있습니다.
 애플리케이션 속성 파일의 속성 값이 SpEL 표현식인 경우 @Value를 통해 소비될 때 평가됩니다.
 
 ## 7.3 프로파일
+
 Spring Profiles는 애플리케이션 구성의 일부를 분리하고 특정 환경에서만 사용할 수 있도록 하는 방법을 제공합니다.
 다음 예제와 같이 모든 @Component, @Configuration 또는 @ConfigurationProperties를 @Profile로 표시하여 로드 시기를 제한할 수 있습니다.
 
 ```java
+
 @Configuration(proxyBeanMethods = false)
 @Profile("production")
 public class ProductionConfiguration {
 
-    // ...
+	// ...
 
 }
 ```
 
 > Note
-> 
-> 자동 스캔이 아닌 @EnableConfigurationProperties를 통해 @ConfigurationProperties 빈을 등록한 경우 @EnableConfigurationProperties 주석이 있는 @Configuration 클래스에 @Profile 주석을 지정해야 합니다.
+>
+> 자동 스캔이 아닌 @EnableConfigurationProperties를 통해 @ConfigurationProperties 빈을 등록한 경우 @EnableConfigurationProperties 주석이 있는
+> @Configuration 클래스에 @Profile 주석을 지정해야 합니다.
 > @ConfigurationProperties를 스캔하는 경우 @ConfigurationProperties 클래스 자체에 @Profile을 지정할 수 있다.
 
 spring.profiles.active 환경 속성을 사용하여 활성화된 프로필을 지정할 수 있습니다.
@@ -1832,7 +1837,8 @@ spring:
     default: "none"
 ```
 
-spring.profiles.active 및 spring.profiles.default는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 즉, spring.config.activate.on-profile에 의해 활성화된 프로필 특정 파일이나 문서에 포함될 수 없습니다.
+spring.profiles.active 및 spring.profiles.default는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 즉, spring.config.activate.on-profile에 의해
+활성화된 프로필 특정 파일이나 문서에 포함될 수 없습니다.
 
 ```yaml
 # this document is valid
@@ -1850,10 +1856,12 @@ spring:
 ```
 
 ### 7.3.1 활성 프로필 추가
+
 spring.profiles.active 속성은 다른 속성과 동일한 순서 규칙을 따릅니다. 가장 높은 PropertySource가 우선합니다
 즉, application.properties에서 활성 프로필을 지정한 다음 명령줄 스위치를 사용하여 바꿀 수 있습니다.
 
-경우에 따라 활성 프로필을 대체하는 대신 추가하는 속성이 있는 것이 유용합니다. spring.profiles.include 속성은 spring.profiles.active 속성에 의해 활성화된 프로필 위에 활성 프로필을 추가하는 데 사용할 수 있습니다.
+경우에 따라 활성 프로필을 대체하는 대신 추가하는 속성이 있는 것이 유용합니다. spring.profiles.include 속성은 spring.profiles.active 속성에 의해 활성화된 프로필 위에 활성
+프로필을 추가하는 데 사용할 수 있습니다.
 SpringApplication 진입점에는 추가 프로필을 설정하기 위한 Java API도 있습니다. SpringApplication의 setAdditionalProfiles() 메소드를 참조하십시오.
 
 예를 들어, 다음 속성을 가진 애플리케이션이 실행되면 --spring.profiles.active 스위치를 사용하여 실행되는 경우에도 공통 및 로컬 프로파일이 활성화됩니다.
@@ -1867,13 +1875,16 @@ spring:
 ```
 
 > Warning
-> 
-> spring.profiles.active와 마찬가지로 spring.profiles.include는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 이는 spring.config.activate.on-profile에 의해 활성화된 프로파일 특정 파일이나 문서에 포함될 수 없음을 의미합니다.
+>
+> spring.profiles.active와 마찬가지로 spring.profiles.include는 프로필이 아닌 특정 문서에서만 사용할 수 있습니다. 이는
+> spring.config.activate.on-profile에 의해 활성화된 프로파일 특정 파일이나 문서에 포함될 수 없음을 의미합니다.
 
 다음 섹션에서 설명하는 프로필 그룹은 지정된 프로필이 활성화된 경우 활성 프로필을 추가하는 데 사용할 수도 있습니다.
 
 ### 7.3.2. 프로필 그룹
-경우에 따라 애플리케이션에서 정의하고 사용하는 프로필이 너무 세분화되어 사용하기 번거로워질 수 있습니다. 예를 들어 데이터베이스 및 메시징 기능을 독립적으로 활성화하는 데 사용하는 proddb 및 prodmq 프로필이 있을 수 있습니다.
+
+경우에 따라 애플리케이션에서 정의하고 사용하는 프로필이 너무 세분화되어 사용하기 번거로워질 수 있습니다. 예를 들어 데이터베이스 및 메시징 기능을 독립적으로 활성화하는 데 사용하는 proddb 및 prodmq
+프로필이 있을 수 있습니다.
 
 이를 돕기 위해 Spring Boot에서는 프로필 그룹을 정의할 수 있습니다. 프로필 그룹을 사용하면 관련된 프로필 그룹의 논리적 이름을 정의할 수 있습니다.
 
@@ -1884,14 +1895,202 @@ spring:
   profiles:
     group:
       production:
-      - "proddb"
-      - "prodmq"
+        - "proddb"
+        - "prodmq"
 ```
 
 이제 --spring.profiles.active=production을 사용하여 애플리케이션을 시작하여 프로덕션, proddb 및 prodmq 프로필을 한 번에 활성화할 수 있습니다.
 
 ### 7.3.3. 프로그래밍 방식으로 프로필 설정
-애플리케이션이 실행되기 전에 SpringApplication.setAdditionalProfiles(… )를 호출하여 프로그래밍 방식으로 활성 프로필을 설정할 수 있습니다. Spring의 ConfigurableEnvironment 인터페이스를 사용하여 프로필을 활성화하는 것도 가능합니다.
+
+애플리케이션이 실행되기 전에 SpringApplication.setAdditionalProfiles(… )를 호출하여 프로그래밍 방식으로 활성 프로필을 설정할 수 있습니다. Spring의
+ConfigurableEnvironment 인터페이스를 사용하여 프로필을 활성화하는 것도 가능합니다.
 
 ### 7.3.4 프로필별 구성 파일
-application.properties(또는 application.yml)와 @ConfigurationProperties를 통해 참조되는 파일의 프로필별 변형은 파일로 간주되어 로드됩니다. 자세한 내용은 "프로필 특정 파일"을 참조하십시오.
+
+application.properties(또는 application.yml)와 @ConfigurationProperties를 통해 참조되는 파일의 프로필별 변형은 파일로 간주되어 로드됩니다. 자세한 내용은 "프로필
+특정 파일"을 참조하십시오.
+
+## 7.4 로깅
+
+Spring Boot는 모든 내부 로깅에 Commons Logging을 사용하지만 기본 로그 구현은 열어 둡니다.
+Java Util Logging, Log4J2 및 Logback에 대한 기본 구성이 제공됩니다. 각각의 경우에 로거는 선택적 파일 출력과 함께 콘솔 출력을 사용하도록 사전 구성됩니다.
+
+기본적으로 "스타터"를 사용하는 경우 로깅에 Logback이 사용됩니다. Java Util Logging, Commons Logging, Log4J 또는 SLF4J를 사용하는 종속 라이브러리가 모두 올바르게
+작동하도록 적절한 Logback 라우팅도 포함됩니다.
+
+> Tip
+>
+> Java에 사용할 수 있는 많은 로깅 프레임워크가 있습니다. 위의 목록이 혼란스러워 보이더라도 걱정하지 마십시오. 일반적으로 로깅 종속성을 변경할 필요가 없으며 Spring Boot 기본값이 제대로 작동합니다.
+
+> Tip
+>
+> 애플리케이션을 서블릿 컨테이너 또는 애플리케이션 서버에 배포할 때 Java Util Logging API로 수행된 로깅은 애플리케이션의 로그로 라우팅되지 않습니다.
+> 이렇게 하면 컨테이너 또는 컨테이너에 배포된 다른 애플리케이션에서 수행한 로깅이 애플리케이션의 로그에 표시되지 않습니다.
+
+### 7.4.1. 로그 포맷
+
+Spring Boot의 기본 로그 출력은 다음 예제와 유사합니다.
+
+```text
+2022-08-17 19:56:50.643  INFO 1103 --- [           main] o.s.b.d.f.s.MyApplication                : Starting MyApplication using Java 1.8.0_345 on myhost with PID 1103 (/opt/apps/myapp.jar started by myuser in /opt/apps/)
+2022-08-17 19:56:50.648  INFO 1103 --- [           main] o.s.b.d.f.s.MyApplication                : No active profile set, falling back to 1 default profile: "default"
+2022-08-17 19:56:53.102  INFO 1103 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-08-17 19:56:53.124  INFO 1103 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-08-17 19:56:53.125  INFO 1103 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.65]
+2022-08-17 19:56:53.284  INFO 1103 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-08-17 19:56:53.286  INFO 1103 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2558 ms
+2022-08-17 19:56:55.450  INFO 1103 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-08-17 19:56:55.469  INFO 1103 --- [           main] o.s.b.d.f.s.MyApplication                : Started MyApplication in 5.464 seconds (JVM running for 6.035)
+```
+
+다음 항목이 출력됩니다.
+
+- 날짜 및 시간: 밀리초 정밀도로 쉽게 정렬할 수 있습니다.
+- 로그 수준: ERROR, WARN, INFO, DEBUG 또는 TRACE.
+- 프로세스 ID.
+- 실제 로그 메시지의 시작을 구분하는 --- 구분 기호입니다.
+- 스레드 이름: 대괄호로 묶습니다(콘솔 출력의 경우 잘릴 수 있음).
+- 로거 이름: 이것은 일반적으로 소스 클래스 이름입니다(종종 축약됨)
+- 로그 메세지
+
+> Note
+>
+> Logback에는 FATAL 수준이 없습니다. ERROR에 매핑됩니다
+
+### 7.4.2 콘솔 출력
+
+기본 로그 구성은 메시지가 기록될 때 콘솔에 메시지를 표시합니다. 기본적으로 ERROR 수준, WARN 수준 및 INFO 수준 메시지가 기록됩니다.
+--debug 플래그로 애플리케이션을 시작하여 "디버그" 모드를 활성화할 수도 있습니다.
+
+```shell
+java -jar myapp.jar --debug
+```
+
+> Note
+>
+> application.properties에서 debug=true를 지정할 수도 있습니다.
+
+디버그 모드가 활성화되면 핵심 로거(임베디드 컨테이너, Hibernate 및 Spring Boot) 선택이 더 많은 정보를 출력하도록 구성됩니다. 디버그 모드를 활성화해도 DEBUG 수준의 모든 메시지를 기록하도록
+애플리케이션이 구성되지는 않습니다.
+
+또는 --trace 플래그(또는 application.properties에서 trace=true)로 애플리케이션을 시작하여 "추적" 모드를 활성화할 수 있습니다.
+이렇게 하면 핵심 로거(임베디드 컨테이너, Hibernate 스키마 생성 및 전체 Spring 포트폴리오) 선택에 대한 추적 로깅이 활성화됩니다
+
+### 색상으로 구분된 출력
+
+터미널이 ANSI를 지원하는 경우 가독성을 높이기 위해 컬러 출력이 사용됩니다. spring.output.ansi.enabled를 지원되는 값으로 설정하여 자동 감지를 재정의할 수 있습니다.
+
+색상 코딩은 %clr 변환 단어를 사용하여 구성됩니다. 가장 간단한 형태에서 변환기는 다음 예제와 같이 로그 수준에 따라 출력 색상을 지정합니다
+
+```text
+%clr(%5p)
+```
+
+다음 표에서는 색상에 대한 로그 수준 매핑을 설명합니다.
+
+| 레벨    | 색깔  |
+|-------|-----|
+| FATAL | 빨강  |
+| ERROR | 빨강  |
+| WARN  | 노랑  |
+| INFO  | 초록  |
+| DEBUG | 초록  |
+| TRACE | 초록  |
+
+또는 변환에 대한 옵션으로 제공하여 사용해야 하는 색상이나 스타일을 지정할 수 있습니다. 예를 들어 텍스트를 노란색으로 만들려면 다음 설정을 사용합니다.
+
+```text
+%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){yellow}
+```
+
+다음 색상 및 스타일이 지원됩니다
+
+- 파란색
+- 청록색
+- 희미한
+- 초록
+- 마젠타
+- 빨간색
+- 노란색
+
+### 7.4.3. 파일 출력
+
+기본적으로 Spring Boot는 콘솔에만 기록하고 로그 파일을 작성하지 않습니다.
+콘솔 출력 외에 로그 파일을 작성하려면 logging.file.name 또는 logging.file.path 속성(예: application.properties에서)을 설정해야 합니다.
+
+다음 표는 logging.* 속성을 함께 사용할 수 있는 방법을 보여줍니다.
+
+| logging.file.name | logging.file.path | 예        | 설명|
+|-------------------|-------------------|----------|-----|
+| (none)            | (none)            || 콘솔 전용 로깅 |
+| 특정 파일             | (none)            | my.log   |지정된 로그 파일에 씁니다. 이름은 정확한 위치이거나 현재 디렉터리에 상대적일 수 있습니다.     |
+| (none)            | 특정 디렉터리           | /var/log |지정된 디렉토리에 spring.log를 씁니다. 이름은 정확한 위치이거나 현재 디렉터리에 상대적일 수 있습니다.   |
+
+로그 파일은 10MB에 도달하면 교체되며 콘솔 출력과 마찬가지로 ERROR 수준, WARN 수준 및 INFO 수준 메시지가 기본적으로 기록됩니다.
+
+> Tip
+>
+> 로깅 속성은 실제 로깅 인프라와 독립적입니다. 결과적으로 특정 구성 키(예: Logback의 logback.configurationFile)는 Spring Boot에서 관리되지 않습니다.
+
+### 7.4.4 파일 로테이션
+
+Logback을 사용하는 경우 application.properties 또는 application.yaml 파일을 사용하여 로그 로테이션 설정을 미세 조정할 수 있습니다.
+다른 모든 로깅 시스템의 경우 로테이션 설정을 직접 구성해야 합니다(예: Log4J2를 사용하는 경우 log4j2.xml 또는 log4j2-spring.xml 파일을 추가할 수 있음).
+
+다음 로테이션 정책 속성이 지원됩니다.
+
+| 이름 | 설명  |
+|-----|----------------------|
+| logging.logback.rollingpolicy.file-name-pattern | 로그 아카이브를 만드는 데 사용되는 파일 이름 패턴입니다. |
+| logging.logback.rollingpolicy.clean-history-on-star | 애플리케이션이 시작될 때 로그 아카이브 정리가 발생해야 하는 경우. |
+| logging.logback.rollingpolicy.max-file-size | 아카이브되기 전 로그 파일의 최대 크기. |
+| logging.logback.rollingpolicy.total-size-cap | 로그 아카이브가 삭제되기 전에 취할 수 있는 최대 크기입니다. |
+| logging.logback.rollingpolicy.max-history | 유지할 아카이브 로그 파일의 최대 수(기본값은 7)입니다. |
+
+### 7.4.5 로그 수준
+지원되는 모든 로깅 시스템은 logging.level.<logger-name>=<level>을 사용하여 Spring 환경(예: application.properties)에서 로거 수준을 설정할 수 있습니다. 여기서 수준은 TRACE, DEBUG, INFO 중 하나입니다. 
+경고, 오류, 치명적 또는 꺼짐. 루트 로거는 logging.level.root를 사용하여 구성할 수 있습니다.
+
+다음 예는 application.properties의 잠재적인 로깅 설정을 보여줍니다.
+
+```yaml
+logging:
+  level:
+    root: "warn"
+    org.springframework.web: "debug"
+    org.hibernate: "error"
+```
+
+환경 변수를 사용하여 로깅 수준을 설정할 수도 있습니다. 예를 들어, LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG는 org.springframework.web을 DEBUG로 설정합니다.
+
+> Note
+> 
+> 위의 접근 방식은 패키지 수준 로깅에만 적용됩니다.완화된 바인딩은 항상 환경 변수를 소문자로 변환하므로 이러한 방식으로 개별 클래스에 대한 로깅을 구성할 수 없습니다.
+> 클래스에 대한 로깅을 구성해야 하는 경우 SPRING_APPLICATION_JSON 변수를 사용할 수 있습니다.
+
+### 7.4.6. 로그그룹
+관련 로거를 함께 그룹화하여 모두 동시에 구성할 수 있는 것이 유용한 경우가 많습니다. 예를 들어 일반적으로 모든 Tomcat 관련 로거의 로깅 수준을 변경할 수 있지만 최상위 패키지를 쉽게 기억할 수 없습니다.
+
+이를 돕기 위해 Spring Boot를 사용하면 Spring 환경에서 로깅 그룹을 정의할 수 있습니다. 예를 들어, 다음은 application.properties에 추가하여 "tomcat" 그룹을 정의하는 방법입니다
+
+```yaml
+logging:
+  group:
+    tomcat: "org.apache.catalina,org.apache.coyote,org.apache.tomcat"
+```
+
+일단 정의되면 한 줄로 그룹의 모든 로거에 대한 수준을 변경할 수 있습니다.
+
+```yaml
+logging:
+  level:
+    tomcat: "trace"
+```
+
+Spring Boot에는 기본적으로 사용할 수 있는 다음과 같은 사전 정의된 로깅 그룹이 포함되어 있습니다.
+
+| 이름  | 로거|
+|-----|-----|
+| web |     |
+| sql |   |
