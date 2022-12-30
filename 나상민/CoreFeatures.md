@@ -2187,3 +2187,57 @@ Logback을 사용하는 경우 다음 속성도 전송됩니다.
 2019-08-30 12:30:04.031 user:someone INFO 22174 --- [  nio-8080-exec-0] demo.Controller
 Handling authenticated request
 ```
+
+### 7.4.9. 로그백 확장
+Spring Boot에는 고급 구성에 도움이 될 수 있는 Logback에 대한 여러 확장이 포함되어 있습니다. logback-spring.xml 구성 파일에서 이러한 확장을 사용할 수 있습니다.
+
+> Note
+> 
+> 표준 logback.xml 구성 파일이 너무 일찍 로드되기 때문에 확장을 사용할 수 없습니다. logback-spring.xml을 사용하거나 logging.config 속성을 정의해야 합니다.
+
+> Warning
+> 
+> 확장은 Logback의 구성 스캔과 함께 사용할 수 없습니다. 그렇게 하려고 하면 구성 파일을 변경하면 다음 중 하나와 유사한 오류가 기록됩니다.
+ 
+```text
+ERROR in ch.qos.logback.core.joran.spi.Interpreter@4:71 - no applicable action for [springProperty], current ElementPath is [[configuration][springProperty]]
+ERROR in ch.qos.logback.core.joran.spi.Interpreter@4:71 - no applicable action for [springProfile], current ElementPath is [[configuration][springProfile]]
+```
+
+### 프로필별 구성
+`<springProfile>` 태그를 사용하면 활성 Spring 프로필을 기반으로 구성 섹션을 선택적으로 포함하거나 제외할 수 있습니다. 프로필 섹션은 `<configuration>` 요소 내 어디에서나 지원됩니다.
+name 속성을 사용하여 구성을 수락하는 프로필을 지정합니다. <springProfile> 태그는 프로필 이름(예: 스테이징) 또는 프로필 표현식을 포함할 수 있습니다. 프로필 표현식을 사용하면 더 복잡한 프로필 논리를 표현할 수 있습니다(예: production & (eu-central | eu-west)).
+자세한 내용은 참조 가이드를 확인하세요. 다음 목록은 세 가지 샘플 프로필을 보여줍니다.
+
+```xml
+<springProfile name="staging">
+    <!-- configuration to be enabled when the "staging" profile is active -->
+</springProfile>
+
+<springProfile name="dev | staging">
+    <!-- configuration to be enabled when the "dev" or "staging" profiles are active -->
+</springProfile>
+
+<springProfile name="!production">
+    <!-- configuration to be enabled when the "production" profile is not active -->
+</springProfile>
+```
+
+### 환경 속성
+`<springProperty>` 태그를 사용하면 Logback 내에서 사용할 Spring 환경의 속성을 노출할 수 있습니다. 이렇게 하면 Logback 구성에서 application.properties 파일의 값에 액세스하려는 경우 유용할 수 있습니다.
+이 태그는 Logback의 표준 `<property>` 태그와 유사한 방식으로 작동합니다. 그러나 직접 값을 지정하는 대신 환경에서 속성의 소스를 지정합니다.
+로컬 범위가 아닌 다른 위치에 속성을 저장해야 하는 경우 범위 특성을 사용할 수 있습니다.
+대체 값이 필요한 경우(환경에서 속성이 설정되지 않은 경우) defaultValue 특성을 사용할 수 있습니다. 다음 예에서는 Logback 내에서 사용할 속성을 노출하는 방법을 보여줍니다.
+
+```xml
+<springProperty scope="context" name="fluentHost" source="myapp.fluentd.host"
+        defaultValue="localhost"/>
+<appender name="FLUENT" class="ch.qos.logback.more.appenders.DataFluentAppender">
+    <remoteHost>${fluentHost}</remoteHost>
+    ...
+</appender>
+```
+
+> Note
+> 
+> 소스는 kebab 대소문자(예: my.property-name)로 지정해야 합니다. 그러나 완화된 규칙을 사용하여 속성을 환경에 추가할 수 있습니다.
