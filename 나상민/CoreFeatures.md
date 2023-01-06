@@ -2241,3 +2241,200 @@ name 속성을 사용하여 구성을 수락하는 프로필을 지정합니다.
 > Note
 > 
 > 소스는 kebab 대소문자(예: my.property-name)로 지정해야 합니다. 그러나 완화된 규칙을 사용하여 속성을 환경에 추가할 수 있습니다.
+
+## 7.5 국제화
+Spring Boot는 지역화된 메시지를 지원하므로 애플리케이션이 다양한 언어 기본 설정을 가진 사용자에게 적합할 수 있습니다. 기본적으로 Spring Boot는 클래스 경로의 루트에서 메시지 리소스 번들의 존재를 찾습니다.
+
+> Note
+> 
+> 자동 구성은 구성된 리소스 번들에 대한 기본 속성 파일(기본적으로 messages.properties)을 사용할 수 있을 때 적용됩니다.
+> 리소스 번들에 언어별 속성 파일만 포함된 경우 기본값을 추가해야 합니다. 구성된 기본 이름과 일치하는 속성 파일이 없으면 자동 구성된 MessageSource가 없습니다.
+
+리소스 번들의 기본 이름과 기타 여러 속성은 다음 예제와 같이 spring.messages 네임스페이스를 사용하여 구성할 수 있습니다.
+
+```yaml
+spring:
+  messages:
+    basename: "messages,config.i18n.messages"
+    fallback-to-system-locale: false
+```
+
+> Tip
+> 
+> spring.messages.basename은 쉼표로 구분된 위치 목록(패키지 한정자 또는 클래스 경로 루트에서 확인된 리소스)을 지원합니다.
+
+지원되는 추가 옵션은 MessageSourceProperties를 참조하십시오.
+
+## 7.6 JSON
+Spring Boot는 세 가지 JSON 매핑 라이브러리와의 통합을 제공합니다.
+- Gson 
+- Jackson 
+- JSON-B
+
+Jackson은 선호되는 기본 라이브러리입니다.
+
+### 7.6.1. Jackson
+Jackson에 대한 자동 구성이 제공되며 Jackson은 spring-boot-starter-json의 일부입니다.
+Jackson이 클래스 경로에 있으면 ObjectMapper 빈이 자동으로 구성됩니다. ObjectMapper의 구성을 사용자 정의하기 위해 여러 구성 특성이 제공됩니다.
+
+### 7.6.2. Gson
+Gson에 대한 자동 구성이 제공됩니다. Gson이 클래스 경로에 있으면 Gson 빈이 자동으로 구성됩니다.
+구성을 사용자 지정하기 위해 여러 spring.gson.* 구성 속성이 제공됩니다. 더 많은 제어를 위해 하나 이상의 GsonBuilderCustomizer 빈을 사용할 수 있습니다.
+
+### 7.6.3. JSON-B
+JSON-B에 대한 자동 구성이 제공됩니다. JSON-B API와 구현이 클래스 경로에 있으면 Jsonb 빈이 자동으로 구성됩니다
+기본 JSON-B 구현은 종속성 관리가 제공되는 Apache Johnzon입니다.
+
+## 7.7 작업 실행 및 예약
+컨텍스트에 Executor bean이 없으면 Spring Boot는 비동기 작업 실행(@EnableAsync) 및 Spring MVC 비동기 요청 처리에 자동으로 연결될 수 있는 합리적인 기본값으로 ThreadPoolTaskExecutor를 자동 구성합니다.
+
+> Tip
+> 
+> 컨텍스트에서 사용자 지정 Executor를 정의한 경우 일반 작업 실행(즉, @EnableAsync)은 이를 투명하게 사용하지만 Spring MVC 지원은 AsyncTaskExecutor 구현(applicationTaskExecutor)이 필요하므로 구성되지 않습니다.
+> 대상 배열에 따라 Executor를 ThreadPoolTaskExecutor로 변경하거나 사용자 지정 Executor를 래핑하는 ThreadPoolTaskExecutor 및 AsyncConfigurer를 모두 정의할 수 있습니다.
+> 
+> 자동 구성 TaskExecutorBuilder를 사용하면 자동 구성이 기본적으로 수행하는 작업을 재현하는 인스턴스를 쉽게 만들 수 있습니다.
+ 
+스레드 풀은 로드에 따라 확장 및 축소할 수 있는 8개의 코어 스레드를 사용합니다. 이러한 기본 설정은 다음 예제와 같이 spring.task.execution 네임스페이스를 사용하여 미세 조정할 수 있습니다.
+
+```yaml
+spring:
+  task:
+    execution:
+      pool:
+        max-size: 16
+        queue-capacity: 100
+        keep-alive: "10s"
+```
+
+이렇게 하면 대기열이 가득 차면(작업 100개) 스레드 풀이 최대 16개의 스레드로 증가하도록 제한된 대기열을 사용하도록 스레드 풀이 변경됩니다.
+스레드가 10초(기본적으로 60초가 아님) 동안 유휴 상태일 때 스레드가 회수되므로 풀 축소는 더욱 공격적입니다.
+
+ThreadPoolTaskScheduler는 예약된 작업 실행에 연결해야 하는 경우 자동 구성될 수도 있습니다(예: @EnableScheduling 사용).
+스레드 풀은 기본적으로 하나의 스레드를 사용하며 해당 설정은 다음 예제와 같이 spring.task.scheduling 네임스페이스를 사용하여 미세 조정할 수 있습니다.
+
+```yaml
+spring:
+  task:
+    scheduling:
+      thread-name-prefix: "scheduling-"
+      pool:
+        size: 2
+```
+
+TaskExecutorBuilder 빈과 TaskSchedulerBuilder 빈은 모두 사용자 지정 실행기 또는 스케줄러를 생성해야 하는 경우 컨텍스트에서 사용할 수 있습니다.
+
+## 7.8 테스트
+Spring Boot는 애플리케이션을 테스트할 때 도움이 되는 여러 유틸리티와 주석을 제공합니다. 테스트 지원은 두 가지 모듈로 제공됩니다. spring-boot-test에는 핵심 항목이 포함되어 있고 spring-boot-test-autoconfigure는 테스트를 위한 자동 구성을 지원합니다.
+
+대부분의 개발자는 Spring Boot 테스트 모듈과 JUnit Jupiter, AssertJ, Hamcrest 및 기타 여러 유용한 라이브러리를 모두 가져오는 spring-boot-starter-test "Starter"를 사용합니다.
+
+> Tip
+> 
+> JUnit 4를 사용하는 테스트가 있는 경우 JUnit 5의 빈티지 엔진을 사용하여 테스트를 실행할 수 있습니다. 빈티지 엔진을 사용하려면 다음 예제와 같이 junit-vintage-engine에 대한 종속성을 추가합니다.
+
+```xml
+<dependency>
+    <groupId>org.junit.vintage</groupId>
+    <artifactId>junit-vintage-engine</artifactId>
+    <scope>test</scope>
+    <exclusions>
+        <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+hamcrest-core는 spring-boot-starter-test의 일부인 org.hamcrest:hamcrest를 위해 제외됩니다.
+
+### 7.8.1. 테스트 범위 종속성
+spring-boot-starter-test "Starter"(테스트 범위 내)에는 다음과 같은 라이브러리가 포함되어 있습니다.
+
+- JUnit 5: 단위 테스트 Java 애플리케이션을 위한 사실상의 표준입니다. 
+- Spring Test & Spring Boot Test: Spring Boot 애플리케이션을 위한 유틸리티 및 통합 테스트 지원.
+- AssertJ: 유창한 어설션 라이브러리입니다. 
+- Hamcrest: 매처 객체 라이브러리(제약 조건 또는 조건자라고도 함). 
+- Mockito: 자바 모킹 프레임워크. 
+- JSONassert: JSON용 어설션 라이브러리입니다. 
+- JsonPath: JSON용 XPath.
+
+일반적으로 이러한 공통 라이브러리는 테스트를 작성할 때 유용합니다. 이러한 라이브러리가 필요에 맞지 않으면 자체 테스트 종속성을 추가할 수 있습니다.
+
+### 7.8.2. 스프링 애플리케이션 테스트
+종속성 주입의 주요 이점 중 하나는 코드를 단위 테스트하기 쉽게 만들수 있다는 것입니다. Spring을 포함하지 않고도 new 연산자를 사용하여 개체를 인스턴스화할 수 있습니다. 실제 종속성 대신 mock 개체를 사용할 수도 있습니다.
+
+종종 단위 테스트를 넘어 통합 테스트를 시작해야 합니다(Spring ApplicationContext 사용). 애플리케이션을 배포하거나 다른 인프라에 연결할 필요 없이 통합 테스트를 수행할 수 있으면 유용합니다.
+
+Spring Framework에는 이러한 통합 테스트를 위한 전용 테스트 모듈이 포함되어 있습니다. org.springframework:spring-test에 직접 종속성을 선언하거나 spring-boot-starter-test "Starter"를 사용하여 전이적으로 가져올 수 있습니다.
+
+이전에 spring-test 모듈을 사용해 본 적이 없다면 먼저 Spring Framework 참조 문서의 관련 섹션을 읽어야 합니다.
+
+### 7.8.3. 스프링 부트 애플리케이션 테스트
+Spring Boot 애플리케이션은 Spring ApplicationContext이므로 바닐라 Spring 컨텍스트로 일반적으로 수행하는 것 이상으로 테스트하기 위해 특별히 수행할 작업은 없습니다.
+
+> Note
+> 
+> Spring Boot의 외부 속성, 로깅 및 기타 기능은 SpringApplication을 사용하여 생성하는 경우에만 기본적으로 컨텍스트에 설치됩니다.
+
+Spring Boot는 @SpringBootTest 어노테이션을 제공하며 Spring Boot 기능이 필요할 때 표준 스프링 테스트 @ContextConfiguration 어노테이션의 대안으로 사용할 수 있습니다.
+어노테이션은 SpringApplication을 통해 테스트에 사용되는 ApplicationContext를 생성하여 작동합니다. @SpringBootTest 외에도 응용 프로그램의 보다 구체적인 조각을 테스트하기 위해 여러 다른 주석도 제공됩니다.
+
+> Tip
+> 
+> JUnit 4를 사용하는 경우 테스트에 @RunWith(SpringRunner.class)도 추가하는 것을 잊지 마십시오. 그렇지 않으면 주석이 무시됩니다
+> JUnit 5를 사용하면 @ExtendWith(SpringExtension.class) as @SpringBootTest 및 기타 @… Test 어노테이션은 필요가 없습니다.
+
+기본적으로 @SpringBootTest는 서버를 시작하지 않습니다. @SpringBootTest의 webEnvironment 속성을 사용하여 테스트 실행 방법을 더 세분화할 수 있습니다.
+
+- MOCK(Default) : 웹 ApplicationContext를 로드하고 모의 웹 환경을 제공한다. 이 어노테이션을 사용하면 임베디드 서버가 시작되지 않습니다. 클래스 경로에서 웹 환경을 사용할 수 없는 경우 이 모드는 웹이 아닌 일반 ApplicationContext를 만드는 것으로 투명하게 대체됩니다. 웹 애플리케이션의 모의 기반 테스트를 위해 @AutoConfigureMockMvc 또는 @AutoConfigureWebTestClient와 함께 사용할 수 있습니다.
+- RANDOM_PORT: WebServerApplicationContext를 로드하고 실제 웹 환경을 제공합니다. 임베디드 서버가 시작되고 임의의 포트에서 청취합니다.
+- DEFINED_PORT: WebServerApplicationContext를 로드하고 실제 웹 환경을 제공합니다. 내장형 서버가 시작되고 정의된 포트(application.properties에서) 또는 기본 포트 8080에서 수신 대기합니다.
+- NONE: SpringApplication을 사용하여 ApplicationContext를 로드하지만 웹 환경(mock 또는 기타)을 제공하지 않습니다.
+
+> Note
+> 
+> 테스트가 @Transactional이면 기본적으로 각 테스트 메서드가 끝날 때 트랜잭션을 롤백합니다
+> 그러나 RANDOM_PORT 또는 DEFINED_PORT와 함께 이 배열을 사용하면 암시적으로 실제 서블릿 환경을 제공하므로 HTTP 클라이언트와 서버는 별도의 스레드에서 실행되므로 별도의 트랜잭션에서 실행됩니다.이 경우 서버에서 시작된 트랜잭션은 롤백되지 않습니다.
+
+> Note
+> 
+> @SpringBootTest with webEnvironment = WebEnvironment.RANDOM_PORT는 또한 애플리케이션이 관리 서버에 대해 다른 포트를 사용하는 경우 별도의 임의 포트에서 관리 서버를 시작합니다.
+
+### 웹 애플리케이션 유형 감지
+Spring MVC를 사용할 수 있는 경우 일반 MVC 기반 애플리케이션 컨텍스트가 구성됩니다. Spring WebFlux만 있는 경우 이를 감지하고 대신 WebFlux 기반 애플리케이션 컨텍스트를 구성합니다.
+
+둘 다 있으면 Spring MVC가 우선합니다. 이 시나리오에서 반응형 웹 애플리케이션을 테스트하려면 spring.main.web-application-type 속성을 설정해야 합니다.
+
+```java
+@SpringBootTest(properties = "spring.main.web-application-type=reactive")
+class MyWebFluxTests {
+
+    // ...
+
+}
+```
+
+### 테스트 구성 감지
+Spring 테스트 프레임워크에 익숙하다면 로드할 Spring @Configuration을 지정하기 위해 @ContextConfiguration(classes=… )를 사용하는 데 익숙할 수 있습니다.
+테스트 내에서 중첩된 @Configuration 클래스를 자주 사용했을 수 있습니다.
+
+Spring Boot 애플리케이션을 테스트할 때 이는 종종 필요하지 않습니다. Spring Boot의 @*Test 어노테이션은 기본 구성을 명시적으로 정의하지 않을 때마다 자동으로 기본 구성을 검색합니다.
+
+검색 알고리즘은 @SpringBootApplication 또는 @SpringBootConfiguration 어노테이션이 달린 클래스를 찾을 때까지 테스트를 포함하는 패키지에서 작동합니다.
+코드를 합리적인 방식으로 구조화했다면 일반적으로 기본 구성을 찾을 수 있습니다.
+
+> Note
+> 
+> 테스트 주석을 사용하여 애플리케이션의 보다 구체적인 부분을 테스트하는 경우 기본 메서드의 애플리케이션 클래스에서 특정 영역에 특정한 구성 설정을 추가하지 않아야 합니다.
+> 
+> @SpringBootApplication의 기본 구성 요소 스캔 구성은 슬라이싱이 예상대로 작동하는지 확인하는 데 사용되는 제외 필터를 정의합니다.
+> @SpringBootApplication 주석 클래스에서 명시적인 @ComponentScan 지시문을 사용하는 경우 해당 필터가 비활성화된다는 점에 유의하십시오. 슬라이싱을 사용하는 경우 다시 정의해야 합니다.
+
+기본 구성을 사용자 정의하려면 중첩된 @TestConfiguration 클래스를 사용할 수 있습니다.
+애플리케이션의 기본 구성 대신 사용되는 중첩된 @Configuration 클래스와 달리 중첩된 @TestConfiguration 클래스는 애플리케이션의 기본 구성 외에도 사용됩니다.
+
+> Note
+> 
+> Spring의 테스트 프레임워크는 테스트 간에 애플리케이션 컨텍스트를 캐시합니다. 따라서 테스트가 동일한 구성을 공유하는 한(검색 방법에 관계없이) 잠재적으로 시간이 많이 소요되는 컨텍스트 로드 프로세스는 한 번만 발생합니다.
