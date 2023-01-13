@@ -2438,3 +2438,238 @@ Spring Boot 애플리케이션을 테스트할 때 이는 종종 필요하지 �
 > Note
 > 
 > Spring의 테스트 프레임워크는 테스트 간에 애플리케이션 컨텍스트를 캐시합니다. 따라서 테스트가 동일한 구성을 공유하는 한(검색 방법에 관계없이) 잠재적으로 시간이 많이 소요되는 컨텍스트 로드 프로세스는 한 번만 발생합니다.
+
+### 테스트 구성 제외
+애플리케이션이 컴포넌트 스캔을 사용하는 경우(예: @SpringBootApplication 또는 @ComponentScan을 사용하는 경우) 특정 테스트에 대해서만 생성한 최상위 구성 클래스가 실수로 모든 곳에서 선택되는 것을 볼 수 있습니다.
+
+앞에서 본 것처럼 @TestConfiguration은 기본 구성을 사용자 지정하기 위해 테스트의 내부 클래스에서 사용할 수 있습니다.
+최상위 클래스에 배치될 때 @TestConfiguration은 src/test/java의 클래스가 스캔으로 선택되지 않아야 함을 나타냅니다. 그런 다음 다음 예제와 같이 필요한 위치에서 해당 클래스를 명시적으로 가져올 수 있습니다.
+
+```java
+@SpringBootTest
+@Import(MyTestsConfiguration.class)
+class MyTests {
+
+    @Test
+    void exampleTest() {
+        // ...
+    }
+
+}
+```
+
+> Note
+> 
+> @ComponentScan을 직접 사용한다면(즉, @SpringBootApplication을 통하지 않고) TypeExcludeFilter를 등록해야 합니다. 자세한 내용은 Javadoc을 참조하십시오.
+ 
+### 애플리케이션 인수 사용
+애플리케이션이 인수를 예상하는 경우 @SpringBootTest에서 args 속성을 사용하여 인수를 주입하도록 할 수 있습니다.
+```java
+@SpringBootTest(args = "--app.test=one")
+class MyApplicationArgumentTests {
+
+    @Test
+    void applicationArgumentsPopulated(@Autowired ApplicationArguments args) {
+        assertThat(args.getOptionNames()).containsOnly("app.test");
+        assertThat(args.getOptionValues("app.test")).containsOnly("one");
+    }
+
+}
+```
+
+### mock환경으로 테스트
+기본적으로 @SpringBootTest는 서버를 시작하지 않고 대신 웹 엔드포인트 테스트를 위한 모의 환경을 설정합니다
+
+Spring MVC를 사용하면 다음 예제와 같이 MockMvc 또는 WebTestClient를 사용하여 웹 엔드포인트를 쿼리할 수 있습니다.
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+class MyMockMvcTests {
+
+    @Test
+    void testWithMockMvc(@Autowired MockMvc mvc) throws Exception {
+        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(content().string("Hello World"));
+    }
+
+    // If Spring WebFlux is on the classpath, you can drive MVC tests with a WebTestClient
+    @Test
+    void testWithWebTestClient(@Autowired WebTestClient webClient) {
+        webClient
+                .get().uri("/")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class).isEqualTo("Hello World");
+    }
+
+}
+```
+
+> Tip
+> 
+> 웹 레이어에만 집중하고 완전한 ApplicationContext를 시작하지 않으려면 대신 @WebMvcTest를 사용하는 것이 좋습니다.
+
+Spring WebFlux 끝점을 사용하면 다음 예제와 같이 WebTestClient를 사용할 수 있습니다.
+
+```java
+@SpringBootTest
+@AutoConfigureWebTestClient
+class MyMockWebTestClientTests {
+
+    @Test
+    void exampleTest(@Autowired WebTestClient webClient) {
+        webClient
+            .get().uri("/")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(String.class).isEqualTo("Hello World");
+    }
+
+}
+```
+
+> Tip
+> 
+> 모의 환경 내에서 테스트하는 것이 일반적으로 전체 서블릿 컨테이너로 실행하는 것보다 빠릅니다.
+> 그러나 모킹은 Spring MVC 레이어에서 발생하기 때문에 하위 수준의 서블릿 컨테이너 동작에 의존하는 코드는 MockMvc로 직접 테스트할 수 없습니다.
+> 
+> 예를 들어 Spring Boot의 오류 처리는 서블릿 컨테이너에서 제공하는 "error page" 지원을 기반으로 합니다.
+> 즉, MVC 레이어가 예상대로 예외를 발생시키고 처리하는지 테스트할 수 있지만 특정 사용자 지정 오류 페이지가 렌더링되는지 직접 테스트할 수는 없습니다.
+> 이러한 하위 수준 문제를 테스트해야 하는 경우 다음 섹션에 설명된 대로 완전히 실행 중인 서버를 시작할 수 있습니다.
+ 
+### 실행 중인 서버로 테스트
+전체 실행 서버를 시작해야 하는 경우 임의 포트를 사용하는 것이 좋습니다. @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)를 사용하는 경우 테스트가 실행될 때마다 사용 가능한 포트가 무작위로 선택됩니다.
+
+@LocalServerPort 어노테이션은 테스트에 사용되는 실제 포트를 주입하는 데 사용할 수 있습니다.
+편의를 위해 시작된 서버에 REST 호출을 해야 하는 테스트는 WebTestClient를 추가로 @Autowire할 수 있습니다. WebTestClient는 다음 예제와 같이 실행 중인 서버에 대한 상대 링크를 확인하고 응답 확인을 위한 전용 API와 함께 제공됩니다.
+
+```java
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class MyRandomPortWebTestClientTests {
+
+   @Test
+   void exampleTest(@Autowired WebTestClient webClient) {
+      webClient
+              .get().uri("/")
+              .exchange()
+              .expectStatus().isOk()
+              .expectBody(String.class).isEqualTo("Hello World");
+   }
+
+}
+```
+
+> Tip
+> 
+> WebTestClient는 라이브 서버와 모의 환경 모두에 사용할 수 있습니다.
+
+이 설정에는 클래스 경로에 spring-webflux가 필요합니다. webflux를 추가할 수 없거나 추가하지 않을 경우 Spring Boot는 TestRestTemplate 기능도 제공합니다.
+
+```java
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class MyRandomPortTestRestTemplateTests {
+
+    @Test
+    void exampleTest(@Autowired TestRestTemplate restTemplate) {
+        String body = restTemplate.getForObject("/", String.class);
+        assertThat(body).isEqualTo("Hello World");
+    }
+
+}
+```
+
+### WebTestClient 사용자 지정
+WebTestClient Bean을 사용자 정의하려면 WebTestClientBuilderCustomizer Bean을 구성하십시오. 이러한 빈은 WebTestClient를 생성하는 데 사용되는 WebTestClient.Builder로 호출됩니다
+
+### JMX 사용하기
+테스트 컨텍스트 프레임워크가 컨텍스트를 캐시하므로 동일한 구성 요소가 동일한 도메인에 등록되는 것을 방지하기 위해 JMX는 기본적으로 비활성화되어 있습니다. 이러한 테스트가 MBeanServer에 액세스해야 하는 경우 더티 표시도 고려하십시오.
+```java
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(properties = "spring.jmx.enabled=true")
+@DirtiesContext
+class MyJmxTests {
+
+    @Autowired
+    private MBeanServer mBeanServer;
+
+    @Test
+    void exampleTest() {
+        assertThat(this.mBeanServer.getDomains()).contains("java.lang");
+        // ...
+    }
+
+}
+```
+
+### 지표 사용
+클래스 경로에 관계없이 메모리 지원을 제외한 측정기 레지스트리는 @SpringBootTest를 사용할 때 자동 구성되지 않습니다.
+
+통합 테스트의 일부로 메트릭을 다른 백엔드로 내보내야 하는 경우 @AutoConfigureMetrics로 주석을 추가합니다.
+
+### Mocking and Spying Beans
+테스트를 실행할 때 애플리케이션 컨텍스트 내에서 특정 구성 요소를 mocking해야 하는 경우가 있습니다.
+예를 들어, 개발 중에 사용할 수 없는 일부 원격 서비스에 대한 퍼사드가 있을 수 있습니다. mock은 실제 환경에서 트리거하기 어려울 수 있는 오류를 시뮬레이션하려는 경우에도 유용할 수 있습니다
+
+Spring Boot에는 ApplicationContext 내부의 빈에 대한 Mockito mock를 정의하는 데 사용할 수 있는 @MockBean 어노테이션이 포함되어 있습니다. 어노테이션을 사용하여 새 bean을 추가하거나 단일 기존 bean 정의를 바꿀 수 있습니다.
+어노테이션은 테스트 클래스, 테스트 내의 필드 또는 @Configuration 클래스 및 필드에서 직접 사용할 수 있습니다. 필드에서 사용하면 생성된 모의 인스턴스도 주입됩니다.mock bean은 각 테스트 방법 후에 자동으로 재설정됩니다.
+
+> Note
+> 
+> 테스트에서 Spring Boot의 테스트 주석(예: @SpringBootTest) 중 하나를 사용하는 경우 이 기능이 자동으로 활성화됩니다. 다른 배열로 이 기능을 사용하려면 다음 예와 같이 리스너를 명시적으로 추가해야 합니다.
+
+```java
+@ContextConfiguration(classes = MyConfig.class)
+@TestExecutionListeners({ MockitoTestExecutionListener.class, ResetMocksTestExecutionListener.class })
+class MyTests {
+
+    // ...
+
+}
+```
+
+다음 예제는 기존 RemoteService 빈을 모의 구현으로 바꿉니다.
+
+```java
+@SpringBootTest
+class MyTests {
+
+    @Autowired
+    private Reverser reverser;
+
+    @MockBean
+    private RemoteService remoteService;
+
+    @Test
+    void exampleTest() {
+        given(this.remoteService.getValue()).willReturn("spring");
+        String reverse = this.reverser.getReverseValue(); // Calls injected RemoteService
+        assertThat(reverse).isEqualTo("gnirps");
+    }
+
+}
+```
+
+> Note
+> 
+> @MockBean은 애플리케이션 컨텍스트 새로 고침 중에 실행되는 빈의 동작을 mock하는 데 사용할 수 없습니다. 테스트가 실행될 때까지 애플리케이션 컨텍스트 새로고침이 완료되고 모의 동작을 구성하기에는 너무 늦었습니다.
+> 이 상황에서 @Bean 메서드를 사용하여 모의 객체를 만들고 구성하는 것이 좋습니다.
+
+또한 @SpyBean을 사용하여 기존 빈을 Mockito 스파이로 래핑할 수 있습니다. 자세한 내용은 Javadoc을 참조하십시오.
+
+> Note
+> 
+> 범위가 지정된 bean에 대해 생성된 것과 같은 CGLib 프록시는 프록시된 메서드를 최종으로 선언합니다. 이렇게 하면 기본 구성에서 최종 메서드를 모의하거나 감시할 수 없으므로 Mockito가 올바르게 작동하지 않습니다.
+> 이러한 bean을 모의하거나 감시하려면 애플리케이션의 테스트 종속성에 org.mockito:mockito-inline을 추가하여 인라인 모의 작성기를 사용하도록 Mockito를 구성하십시오. 이를 통해 Mockito는 최종 메서드를 mock하고 감시할 수 있습니다.
+
+> Note
+> 
+> Spring의 테스트 프레임워크는 테스트 간에 애플리케이션 컨텍스트를 캐싱하고 동일한 구성을 공유하는 테스트를 위해 컨텍스트를 재사용하지만 @MockBean 또는 @SpyBean을 사용하면 캐시 키에 영향을 미치므로 컨텍스트 수가 증가할 가능성이 높습니다.
+
+> Tip
+> 
+> @SpyBean을 사용하여 이름으로 매개변수를 참조하는 @Cacheable 메서드로 빈을 감시하는 경우 애플리케이션을 -parameters로 컴파일해야 합니다.
+> 이렇게 하면 bean이 염탐되면 캐싱 인프라에서 매개변수 이름을 사용할 수 있습니다.
+
+> Tip
+> 
+> @SpyBean을 사용하여 Spring에 의해 프록시되는 bean을 감시하는 경우 주어진 상황 또는 when을 사용하여 기대치를 설정할 때와 같은 일부 상황에서 Spring의 프록시를 제거해야 할 수 있습니다. 그렇게 하려면 AopTestUtils.getTargetObject(yourProxiedSpy)를 사용하십시오
