@@ -2673,3 +2673,84 @@ class MyTests {
 > Tip
 > 
 > @SpyBean을 사용하여 Spring에 의해 프록시되는 bean을 감시하는 경우 주어진 상황 또는 when을 사용하여 기대치를 설정할 때와 같은 일부 상황에서 Spring의 프록시를 제거해야 할 수 있습니다. 그렇게 하려면 AopTestUtils.getTargetObject(yourProxiedSpy)를 사용하십시오
+
+### 자동 구성된 테스트
+Spring Boot의 자동 구성 시스템은 애플리케이션에 잘 작동하지만 때때로 테스트에는 너무 많을 수 있습니다.
+애플리케이션의 "조각"을 테스트하는 데 필요한 구성 부분만 로드하는 것이 도움이 되는 경우가 많습니다.
+예를 들어 Spring MVC 컨트롤러가 URL을 올바르게 매핑하고 있는지 테스트하고 이러한 테스트에 데이터베이스 호출을 포함하고 싶지 않거나 또는 관심없는 웹 레이어 테스트 말고 JPA 엔터티를 테스트하고 싶을 수 있다.
+
+spring-boot-test-autoconfigure 모듈에는 이러한 "슬라이스"를 자동으로 구성하는 데 사용할 수 있는 여러 어노테이션이 포함되어 있습니다.
+각각은 비슷한 방식으로 작동하여 ApplicationContext를 로드하는 @… Test 주석과 자동 구성 설정을 사용자 지정하는 데 사용할 수 있는 하나 이상의 @AutoConfigure… 어노테이션을 제공합니다.
+
+> Note
+> 
+> 각 슬라이스는 구성 요소 스캔을 적절한 구성 요소로 제한하고 매우 제한된 자동 구성 클래스 집합을 로드합니다.
+> 그 중 하나를 제외해야 하는 경우 대부분의 @… Test 주석은 excludeAutoConfiguration 속성을 제공합니다. 또는 @ImportAutoConfiguration#exclude를 사용할 수 있습니다.
+
+> Note
+> 
+> 하나의 테스트에서 여러 @… 테스트 주석을 사용하여 여러 "슬라이스"를 포함하는 것은 지원되지 않습니다. 여러 "슬라이스"가 필요한 경우 @… Test 주석 중 하나를 선택하고 다른 "슬라이스"의 @AutoConfigure... 주석을 직접 포함합니다.
+
+> Tip
+> 
+> 표준 @SpringBootTest 주석과 함께 @AutoConfigure… 주석을 사용하는 것도 가능합니다. 애플리케이션을 "슬라이싱"하는 데는 관심이 없지만 일부 자동 구성된 테스트 빈을 원하는 경우 이 조합을 사용할 수 있습니다.
+ 
+### 자동 구성된 JSON 테스트
+개체 JSON 직렬화 및 역직렬화가 예상대로 작동하는지 테스트하려면 @JsonTest 주석을 사용할 수 있습니다.
+@JsonTest는 다음 라이브러리 중 하나일 수 있는 사용 가능한 지원 JSON 매퍼를 자동 구성합니다.
+- Jackson ObjectMapper, 모든 @JsonComponent 빈 및 모든 Jackson 모듈
+- Gson
+- Jsonb
+
+> Tip
+> 
+> @JsonTest에 의해 활성화된 자동 구성 목록은 부록에서 찾을 수 있습니다
+
+자동 구성 요소를 구성해야 하는 경우 @AutoConfigureJsonTesters 주석을 사용할 수 있습니다.
+
+Spring Boot에는 JSONAssert 및 JsonPath 라이브러리와 함께 작동하여 JSON이 예상대로 표시되는지 확인하는 AssertJ 기반 도우미가 포함되어 있습니다.
+JacksonTester, GsonTester, JsonbTester 및 BasicJsonTester 클래스는 각각 Jackson, Gson, Jsonb 및 Strings에 사용할 수 있습니다.
+테스트 클래스의 모든 도우미 필드는 @JsonTest를 사용할 때 @Autowired가 될 수 있습니다. 다음 예는 Jackson의 테스트 클래스를 보여줍니다.
+
+```java
+@JsonTest
+class MyJsonTests {
+
+    @Autowired
+    private JacksonTester<VehicleDetails> json;
+
+    @Test
+    void serialize() throws Exception {
+        VehicleDetails details = new VehicleDetails("Honda", "Civic");
+        // Assert against a `.json` file in the same package as the test
+        assertThat(this.json.write(details)).isEqualToJson("expected.json");
+        // Or use JSON path based assertions
+        assertThat(this.json.write(details)).hasJsonPathStringValue("@.make");
+        assertThat(this.json.write(details)).extractingJsonPathStringValue("@.make").isEqualTo("Honda");
+    }
+
+    @Test
+    void deserialize() throws Exception {
+        String content = "{\"make\":\"Ford\",\"model\":\"Focus\"}";
+        assertThat(this.json.parse(content)).isEqualTo(new VehicleDetails("Ford", "Focus"));
+        assertThat(this.json.parseObject(content).getMake()).isEqualTo("Ford");
+    }
+
+}
+```
+
+> Note
+> 
+> JSON 도우미 클래스는 표준 단위 테스트에서 직접 사용할 수도 있습니다. 이렇게 하려면 @JsonTest를 사용하지 않는 경우 @Before 메서드에서 헬퍼의 initFields 메서드를 호출합니다.
+
+Spring Boot의 AssertJ 기반 헬퍼를 사용하여 주어진 JSON 경로에서 숫자 값을 어설션하는 경우 유형에 따라 isEqualTo를 사용하지 못할 수 있습니다. 대신 AssertJ의 만족을 사용하여 값이 주어진 조건과 일치하는지 확인할 수 있습니다.
+예를 들어 다음 예제에서는 실제 숫자가 오프셋 0.01 내에서 0.15에 가까운 부동 소수점 값이라고 주장합니다.
+
+```java
+@Test
+void someTest() throws Exception {
+    SomeObject value = new SomeObject(0.152f);
+    assertThat(this.json.write(value)).extractingJsonPathNumberValue("@.test.numberValue")
+            .satisfies((number) -> assertThat(number.floatValue()).isCloseTo(0.15f, within(0.01f)));
+}
+```
