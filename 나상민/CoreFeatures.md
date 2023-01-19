@@ -2754,3 +2754,122 @@ void someTest() throws Exception {
             .satisfies((number) -> assertThat(number.floatValue()).isCloseTo(0.15f, within(0.01f)));
 }
 ```
+
+### 자동 구성된 Spring MVC 테스트
+Spring MVC 컨트롤러가 예상대로 작동하는지 테스트하려면 @WebMvcTest 주석을 사용하십시오.
+@WebMvcTest는 Spring MVC 인프라를 자동 구성하고 스캔된 빈을 @Controller, @ControllerAdvice, @JsonComponent, Converter, GenericConverter, Filter, HandlerInterceptor, WebMvcConfigurer, WebMvcRegistrations 및 HandlerMethodArgumentResolver로 제한합니다.
+일반 @Component 및 @ConfigurationProperties 빈은 @WebMvcTest 주석이 사용될 때 스캔되지 않습니다. @EnableConfigurationProperties는 @ConfigurationProperties 빈을 포함하는 데 사용할 수 있습니다.
+
+> Tip
+> 
+> @WebMvcTest에 의해 활성화된 자동 구성 설정 목록은 부록에서 찾을 수 있습니다.
+ 
+> Tip
+> 
+> Jackson 모듈과 같은 추가 구성 요소를 등록해야 하는 경우 테스트에서 @Import를 사용하여 추가 구성 클래스를 가져올 수 있습니다.
+
+종종 @WebMvcTest는 단일 컨트롤러로 제한되며 @MockBean과 함께 사용되어 필요한 협력자에게 mock 구현을 제공합니다.
+
+@WebMvcTest는 MockMvc도 자동 구성합니다. Mock MVC는 전체 HTTP 서버를 시작할 필요 없이 MVC 컨트롤러를 빠르게 테스트할 수 있는 강력한 방법을 제공합니다.
+
+> Tip
+> 
+> 또한 @AutoConfigureMockMvc로 어노테이션을 달아 @WebMvcTest가 아닌(예: @SpringBootTest)에서 MockMvc를 자동 구성할 수 있습니다. 다음 예제에서는 MockMvc를 사용합니다.
+
+```java
+@WebMvcTest(UserVehicleController.class)
+class MyControllerTests {
+
+    @Autowired
+    private MockMvc mvc;
+
+    @MockBean
+    private UserVehicleService userVehicleService;
+
+    @Test
+    void testExample() throws Exception {
+        given(this.userVehicleService.getVehicleDetails("sboot"))
+            .willReturn(new VehicleDetails("Honda", "Civic"));
+        this.mvc.perform(get("/sboot/vehicle").accept(MediaType.TEXT_PLAIN))
+            .andExpect(status().isOk())
+            .andExpect(content().string("Honda Civic"));
+    }
+
+}
+```
+
+> Note
+> 
+> 기본적으로 Spring Boot는 각 테스트 후에 드라이버가 종료되고 새 인스턴스가 주입되도록 WebDriver 빈을 특별한 "scope"에 넣습니다
+> 이 동작을 원하지 않으면 WebDriver @Bean 정의에 @Scope("singleton")를 추가할 수 있습니다.
+
+> Warning
+> 
+> Spring Boot에 의해 생성된 webDriver 범위는 동일한 이름의 사용자 정의 범위를 대체합니다. 자신의 webDriver 범위를 정의하면 @WebMvcTest를 사용할 때 작동이 중지될 수 있습니다.
+
+클래스 경로에 Spring Security가 있는 경우 @WebMvcTest는 WebSecurityConfigurer 빈도 스캔합니다.
+이러한 테스트에 대해 보안을 완전히 비활성화하는 대신 Spring Security의 테스트 지원을 사용할 수 있습니다. Spring Security의 MockMvc 지원을 사용하는 방법에 대한 자세한 내용은 이 Spring Security를 사용한 테스트 방법 섹션에서 찾을 수 있습니다.
+
+> Tip
+> 
+> 때때로 Spring MVC 테스트를 작성하는 것만으로는 충분하지 않습니다. Spring Boot는 실제 서버에서 완전한 end-to-end 테스트를 실행할 수 있도록 도와줍니다.
+ 
+### 자동 구성된 Spring WebFlux 테스트
+Spring WebFlux 컨트롤러가 예상대로 작동하는지 테스트하려면 @WebFluxTest 주석을 사용할 수 있습니다.
+@WebFluxTest는 Spring WebFlux 인프라를 자동 구성하고 스캔된 빈을 @Controller, @ControllerAdvice, @JsonComponent, Converter, GenericConverter, WebFilter 및 WebFluxConfigurer로 제한합니다.
+일반 @Component 및 @ConfigurationProperties 빈은 @WebFluxTest 주석이 사용될 때 스캔되지 않습니다. @EnableConfigurationProperties는 @ConfigurationProperties 빈을 포함하는 데 사용할 수 있습니다.
+
+> Tip
+> 
+> @WebFluxTest에 의해 활성화된 자동 구성 목록은 부록에서 찾을 수 있습니다.
+
+> Tip
+> 
+> Jackson 모듈과 같은 추가 구성 요소를 등록해야 하는 경우 테스트에서 @Import를 사용하여 추가 구성 클래스를 가져올 수 있습니다.
+
+종종 @WebFluxTest는 단일 컨트롤러로 제한되며 @MockBean 주석과 함께 사용되어 필요한 협력자에게 mock 구현을 제공합니다.
+
+@WebFluxTest는 또한 WebTestClient를 자동 구성하여 전체 HTTP 서비스를 시작할 필요 없이 WebFlux 컨트롤러를 빠르게 테스트할 수 있는 강력한 방법을 제공합니다.
+@AutoConfigureWebTestClient로 주석을 달아 @WebFluxTest가 아닌(예: @SpringBootTest)에서 WebTestClient를 자동 구성할 수도 있습니다. 다음 예제는 @WebFluxTest와 WebTestClient를 모두 사용하는 클래스를 보여줍니다.
+
+> Tip
+> 
+> 또한 @AutoConfigureWebTestClient로 주석을 달아 @WebFluxTest가 아닌(예: @SpringBootTest)에서 WebTestClient를 자동 구성할 수 있습니다. 다음 예제는 @WebFluxTest와 WebTestClient를 모두 사용하는 클래스를 보여줍니다.
+ 
+```java
+@WebFluxTest(UserVehicleController.class)
+class MyControllerTests {
+
+    @Autowired
+    private WebTestClient webClient;
+
+    @MockBean
+    private UserVehicleService userVehicleService;
+
+    @Test
+    void testExample() {
+        given(this.userVehicleService.getVehicleDetails("sboot"))
+            .willReturn(new VehicleDetails("Honda", "Civic"));
+        this.webClient.get().uri("/sboot/vehicle").accept(MediaType.TEXT_PLAIN).exchange()
+            .expectStatus().isOk()
+            .expectBody(String.class).isEqualTo("Honda Civic");
+    }
+
+}
+```
+
+> Tip
+> 
+> 모의 웹 애플리케이션에서 WebTestClient를 사용하면 현재 WebFlux에서만 작동하므로 이 설정은 WebFlux 애플리케이션에서만 지원됩니다.
+
+> Note
+> 
+> @WebFluxTest는 기능적 웹 프레임워크를 통해 등록된 경로를 감지할 수 없습니다. 컨텍스트에서 RouterFunction 빈을 테스트하려면 @Import를 사용하거나 @SpringBootTest를 사용하여 RouterFunction을 직접 가져오는 것을 고려하십시오.
+
+> Note
+> 
+> @WebFluxTest는 SecurityWebFilterChain 유형의 @Bean으로 등록된 사용자 정의 보안 구성을 감지할 수 없습니다. 이를 테스트에 포함하려면 @Import 또는 @SpringBootTest를 사용하여 빈을 등록하는 구성을 가져와야 합니다.
+
+> Tip
+> 
+> 때때로 Spring WebFlux 테스트를 작성하는 것만으로는 충분하지 않습니다. Spring Boot는 실제 서버에서 완전한 end-to-end 테스트를 실행할 수 있도록 도와줍니다.
